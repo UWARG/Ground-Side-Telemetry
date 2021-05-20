@@ -23,7 +23,11 @@ void MainWindow::addWaypoint(int num, QFormLayout* layout, int maxNum)
     layout->addRow("Longitude", new QLineEdit);
     layout->addRow("Altitude", new QLineEdit);
     layout->addRow("Turn Radius", new QLineEdit);
-    layout->addRow("Waypoint Type", new QLineEdit);
+
+    QComboBox* waypointType = new QComboBox();
+    waypointType->addItems({"0 - Path Follow", "1 - Orbit", "2 - Hold"});
+
+    layout->addRow("Waypoint Type", waypointType);
 
     if (num != maxNum){
         layout->addItem(new QSpacerItem(0, 25, QSizePolicy::Fixed));
