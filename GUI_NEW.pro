@@ -13,7 +13,6 @@ SOURCES += \
     mainwindow.cpp
 
 HEADERS += \
-    json.hpp \
     mainwindow.h
 
 FORMS += \

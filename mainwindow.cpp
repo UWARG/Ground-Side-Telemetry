@@ -1,11 +1,9 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#import <QDebug>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
-    , File{}
 {
     ui->setupUi(this);
 }
@@ -45,21 +43,6 @@ void MainWindow::remove(QLayout* layout){
            }
            delete child;
        }
-}
-
-
-void MainWindow::on_fileBrowseButton_clicked()
-{
-    QString filter = "JSON File (*.json)";
-    QString file_name = QFileDialog::getOpenFileName(this, "Open a File", "C:\\", filter);
-    QFile file(file_name);
-    File.setFileName(file_name);
-
-    QFileInfo fileInfo(file.fileName());
-    QString filename(fileInfo.fileName());
-    ui->fileNameEdit->setText(filename);
-
-
 }
 
 void MainWindow::on_setWaypointNumberButton_clicked()
@@ -117,29 +100,4 @@ void MainWindow::on_sendInfoButton_clicked()
 
         }
     }
-}
-
-void MainWindow::on_fileLoadButton_clicked()
-{
-    if (!File.open(QFile::ReadOnly | QFile::Text)){
-        QMessageBox::warning(this, "File Error", "File cannot be opened");
-        return;
-    }
-
-
-    QTextStream in(&File);
-    QString text = in.readAll();
-
-    qDebug() << text;
-
-    // Might need changing for Linux
-    std::string text_in_std = text.toLocal8Bit().constData();
-
-    json j = json::parse(text_in_std);
-
-
-    qDebug() << QString::fromUtf8(std::string(j["fruit"]).c_str());
-
-
-
 }
