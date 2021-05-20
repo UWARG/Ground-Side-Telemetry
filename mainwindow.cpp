@@ -68,12 +68,12 @@ void MainWindow::on_setWaypointNumberButton_clicked()
 
 void MainWindow::on_sendInfoButton_clicked()
 {
-    QString waypointModifyFlightPathCommand = ui->waypointModifyFlightPathCommandEdit->text();
-    QString waypointNextDirectionCommand = ui->waypointNextDirectionsCommandEdit->text();
-    QString initalizingHomeBase = ui->initializingHomeBaseEdit->text();
+    QString waypointModifyFlightPathCommand = ui->waypointModifyFlightPathCommandBox->currentText();
+    QString waypointNextDirectionCommand = ui->waypointNextDirectionsCommandBox->currentText();
+    QString initalizingHomeBase = ui->initializingHomeBaseBox->currentText();
     QString holdingAltitude = ui->holdingAltitudeEdit->text();
     QString holdingTurnRadius = ui->holdingTurnRadiusEdit->text();
-    QString holdingTurnDirection = ui->holdingTurnDirectionEdit->text();
+    QString holdingTurnDirection = ui->holdingTurnDirectionBox->currentText();
     QString flightPathModifyNextId = ui->flightPathModifyNextIdEdit->text();
     QString flightPathModifyPrevId = ui->flightPathModifyPrevIdEdit->text();
     QString flightPathModifyId = ui->flightPathModifyIdEdit->text();
@@ -81,7 +81,7 @@ void MainWindow::on_sendInfoButton_clicked()
     QString homeBaseLongitude = ui->homeBaseLongitudeEdit->text();
     QString homeBaseAltitude = ui->homeBaseAltitudeEdit->text();
     QString homeBaseTurnRadius = ui->homeBaseTurnRadiusdit->text();
-    QString homeBaseWaypointType = ui->homeBaseWaypointTypeEdit->text();
+    QString homeBaseWaypointType = ui->homeBaseWaypointTypeBox->currentText();
 
     int numWaypoints = ui->setWaypointNumberEdit->value();
 
