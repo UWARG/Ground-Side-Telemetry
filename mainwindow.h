@@ -8,6 +8,7 @@
 #include <QSpacerItem>
 #include <QSizePolicy>
 #import <QDebug>
+#include <QComboBox>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
