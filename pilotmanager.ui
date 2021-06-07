@@ -359,7 +359,7 @@
        </widget>
       </item>
       <item row="3" column="0">
-       <widget class="QLabel" name="label_planeRow">
+       <widget class="QLabel" name="label_planeRoll">
         <property name="text">
          <string>Roll</string>
         </property>
@@ -383,7 +383,7 @@
        </widget>
       </item>
       <item row="3" column="1">
-       <widget class="QLabel" name="data_planeRow">
+       <widget class="QLabel" name="data_planeRoll">
         <property name="text">
          <string>TextLabel</string>
         </property>
