@@ -2,6 +2,10 @@
 // Author: Jingting Liu
 // April 9th, 2021
 
+// Groundside Encoding Modifications
+// Author: Bassel Al Omari
+// June 7th, 2021
+
 // to run the test without cmake:
 // gcc -g Airside_Functions.cpp
 // a.out
