@@ -109,4 +109,8 @@ void MainWindow::on_sendInfoButton_clicked()
             qDebug() << "Waypoint Type: " << qobject_cast<QComboBox *>(layout->itemAt(i * 14 + 12)->widget())->currentText() << "\n\n";
         }
     }
+
+
+
+
 }

@@ -9,6 +9,7 @@
 #include <QSizePolicy>
 #import <QDebug>
 #include <QComboBox>
+#include <Mavlink/Airside_Functions.hpp>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
