@@ -2,7 +2,9 @@
 #define PILOTMANAGER_H
 
 #include <QMainWindow>
+#include "Mavlink2/Groundside_Functions.hpp"
 #include "Mavlink2/Airside_Functions.hpp"
+#include "Mavlink2/Mavlink2_lib/common/common.h"
 
 #define POGI_Filepath ""
 

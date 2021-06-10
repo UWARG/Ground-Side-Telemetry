@@ -10,16 +10,19 @@ CONFIG += console
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    decoder.cpp \
+    Json_Functions.cpp \
     main.cpp \
     pilotmanager.cpp \
-    Mavlink2/Airside_Functions.cpp
+    Mavlink2/Airside_Functions.cpp \
+    Mavlink2/Groundside_Functions.cpp
 
 HEADERS += \
-    decoder.h \
+    Json_Functions.h \
     pilotmanager.h \
+    Mavlink2/Mavlink2_lib/common/common.h \
     Mavlink2/Airside_Functions.hpp \
-    Mavlink2/Mavlink2_lib/common/common.h
+    Mavlink2/Groundside_Functions.hpp \
+    Mavlink2/Encodings.hpp
 
 FORMS += \
     pilotmanager.ui

@@ -1,8 +1,10 @@
 #include "pilotmanager.h"
 #include "ui_pilotmanager.h"
-#include "decoder.h"
-#include "Mavlink2/Airside_Functions.hpp"
-#include "Mavlink2/Mavlink2_lib/common/common.h"
+
+#include "Json_Functions.h"
+
+#include "Mavlink2/Encodings.hpp"
+#include "Mavlink2/Groundside_Functions.hpp"
 
 #include <QFile>
 #include <QJsonParseError>
@@ -25,20 +27,25 @@ PilotManager::PilotManager(QWidget *parent)
     memset (&encoded_msg2, 0x00, sizeof(mavlink_message_t));
 
     POGI_Euler_Angle_t angle_cmd = {
-                                        1, //yaw
-                                        2, //pitch
-                                        3, //roll
+                                        2, //yaw
+                                        1, //pitch
+                                        90, //roll
                                     };
     one_byte_uint_cmd_t uint8_cmd =
                                     {
                                         8,
+                                    };
+
+    POGI_Timestamp_t timestamp =
+                                    {
+                                        9,
                                     };
     uint8_t encoding_result = Mavlink_airside_encoder(MESSAGE_ID_EULER_ANGLE_CAM, &encoded_msg, (const uint8_t*) &angle_cmd);
     if (encoding_result == MAVLINK_ENCODING_FAIL) {
         exit(-1);
     }
 
-    uint8_t result2 = Mavlink_airside_encoder(MESSAGE_ID_ERROR_CODE, &encoded_msg2, (const uint8_t*) &uint8_cmd);
+    uint8_t result2 = Mavlink_airside_encoder(MESSAGE_ID_TIMESTAMP, &encoded_msg2, (const uint8_t*) &timestamp);
     if (result2 == MAVLINK_ENCODING_FAIL) {
         exit(-1);
     }
@@ -52,28 +59,6 @@ PilotManager::~PilotManager()
 {
     delete ui;
 }
-
-//void PilotManager::writeToJSON(char* jsonIndex, )
-//{
-//    /* get current contents of the file */
-//    QFile file(POGI_Filepath);
-//    file.open(QIODevice::ReadOnly | QIODevice::Text);
-//    QJsonParseError JsonParseError;
-//    QJsonDocument JsonDocument = QJsonDocument::fromJson(file.readAll(), &JsonParseError);
-//    file.close();
-
-//    /* get the desired field */
-//    QJsonObject RootObject = JsonDocument.object();
-//    QJsonValueRef ref = RootObject.find(jsonIndex).value();
-//    QJsonObject m_addvalue = ref.toObject();
-
-//    m_addvalue.insert("Street","India");//set the value you want to modify
-//    ref=m_addvalue; //assign the modified object to reference
-//    JsonDocument.setObject(RootObject); // set to json document
-//    file.open(QFile::WriteOnly | QFile::Text | QFile::Truncate);
-//    file.write(JsonDocument.toJson());
-//    file.close();
-//}
 
 void PilotManager::updateWidget(mavlink_message_t encoded_msg)
 {
@@ -106,6 +91,8 @@ void PilotManager::updateWidget(mavlink_message_t encoded_msg)
             POGI_Timestamp_t timestamp_decoded;
             memcpy(&timestamp_decoded, &decoded_message_buffer, sizeof(POGI_Timestamp_t));
             ui->data_timestampOfMeasurements->setNum((int) timestamp_decoded.timeStamp);
+
+            write_to_POGI_JSON(QString("timestampOfMeasurements"), QJsonValue((int) timestamp_decoded.timeStamp));
         }
         break;
 
@@ -116,6 +103,14 @@ void PilotManager::updateWidget(mavlink_message_t encoded_msg)
             ui->data_latitude->setNum((int) gps_decoded.latitude);
             ui->data_altitude->setNum((int) gps_decoded.altitude);
             ui->data_longitude->setNum((int) gps_decoded.longitude);
+
+            QJsonObject gps_coords
+            {
+                {"latitude", (int) gps_decoded.latitude},
+                {"altitude", (int) gps_decoded.altitude},
+                {"longitude", (int) gps_decoded.longitude}
+            };
+            write_to_POGI_JSON(QString("gpsCoordinates"), QJsonValue(gps_coords));
         }
         break;
 
@@ -126,6 +121,14 @@ void PilotManager::updateWidget(mavlink_message_t encoded_msg)
             ui->data_planePitch->setNum((double) plane_euler_decoded.pitch);
             ui->data_planeRoll->setNum((double) plane_euler_decoded.roll);
             ui->data_planeYaw->setNum((double) plane_euler_decoded.yaw);
+
+            QJsonObject plane_euler
+            {
+                {"pitch", (double) plane_euler_decoded.pitch},
+                {"roll", (double) plane_euler_decoded.roll},
+                {"yaw", (double) plane_euler_decoded.yaw}
+            };
+            write_to_POGI_JSON(QString("eulerAnglesOfPlane"), QJsonValue(plane_euler));
         }
         break;
 
@@ -133,10 +136,17 @@ void PilotManager::updateWidget(mavlink_message_t encoded_msg)
         {
             POGI_Euler_Angle_t camera_euler_decoded;
             memcpy(&camera_euler_decoded, &decoded_message_buffer, sizeof(POGI_Euler_Angle_t));
-            qWarning() << "PITCH: " << camera_euler_decoded.pitch;
-            ui->data_cameraPitch->setNum((int) camera_euler_decoded.pitch);
-            ui->data_cameraRoll->setNum((int) camera_euler_decoded.roll);
-            ui->data_cameraYaw->setNum((int) camera_euler_decoded.yaw);
+            ui->data_cameraPitch->setNum((double) camera_euler_decoded.pitch);
+            ui->data_cameraRoll->setNum((double) camera_euler_decoded.roll);
+            ui->data_cameraYaw->setNum((double) camera_euler_decoded.yaw);
+
+            QJsonObject camera_euler
+            {
+                {"pitch", (double) camera_euler_decoded.pitch},
+                {"roll", (double) camera_euler_decoded.roll},
+                {"yaw", (double) camera_euler_decoded.yaw}
+            };
+            write_to_POGI_JSON(QString("eulerAnglesOfCamera"), QJsonValue(camera_euler));
         }
         break;
 
@@ -152,6 +162,8 @@ void PilotManager::updateWidget(mavlink_message_t encoded_msg)
             {
                 ui->data_isLanded->setText("False");
             }
+
+            write_to_POGI_JSON(QString("isLanded"), QJsonValue((bool) is_landed_decoded.cmd));
         }
         break;
 
@@ -160,6 +172,8 @@ void PilotManager::updateWidget(mavlink_message_t encoded_msg)
             four_bytes_float_cmd_t airspeed_decoded;
             memcpy(&airspeed_decoded, &decoded_message_buffer, sizeof(four_bytes_float_cmd_t));
             ui->data_currentAirspeed->setNum((double) airspeed_decoded.cmd);
+
+            write_to_POGI_JSON(QString("currentAirspeed"), QJsonValue((double) airspeed_decoded.cmd));
         }
         break;
 
