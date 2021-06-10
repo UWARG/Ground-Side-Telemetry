@@ -1,0 +1,20 @@
+{
+    "Address": {
+        "City": "London",
+        "Country": "Great Britain",
+        "Street": "Downing Street 10"
+    },
+    "Age": 43,
+    "FirstName": "John",
+    "LastName": "Doe",
+    "Phone numbers": [
+        "+44 1234567",
+        "+44 2345678"
+    ],
+    "eulerAnglesOfCamera": {
+        "pitch": 1,
+        "roll": 90,
+        "yaw": 2
+    },
+    "timestampOfMeasurements": 9
+}
