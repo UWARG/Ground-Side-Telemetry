@@ -1,4 +1,5 @@
 QT       += core gui
+QT       += serialport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -13,12 +14,14 @@ SOURCES += \
     Json_Functions.cpp \
     main.cpp \
     pilotmanager.cpp \
+    serialclass.cpp \
     Mavlink2/Airside_Functions.cpp \
     Mavlink2/Groundside_Functions.cpp
 
 HEADERS += \
     Json_Functions.h \
     pilotmanager.h \
+    serialclass.h \
     Mavlink2/Mavlink2_lib/common/common.h \
     Mavlink2/Airside_Functions.hpp \
     Mavlink2/Groundside_Functions.hpp \

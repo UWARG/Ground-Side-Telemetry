@@ -19,40 +19,24 @@ PilotManager::PilotManager(QWidget *parent)
     , ui(new Ui::PilotManager)
 {
     ui->setupUi(this);
-
-    /* placeholder for Andrew's Xbee stuff */
-    mavlink_message_t encoded_msg;
-    mavlink_message_t encoded_msg2;
-    memset (&encoded_msg, 0x00, sizeof(mavlink_message_t));
-    memset (&encoded_msg2, 0x00, sizeof(mavlink_message_t));
-
-    POGI_Euler_Angle_t angle_cmd = {
-                                        2, //yaw
-                                        1, //pitch
-                                        90, //roll
-                                    };
-    one_byte_uint_cmd_t uint8_cmd =
-                                    {
-                                        8,
-                                    };
-
-    POGI_Timestamp_t timestamp =
-                                    {
-                                        9,
-                                    };
-    uint8_t encoding_result = Mavlink_airside_encoder(MESSAGE_ID_EULER_ANGLE_CAM, &encoded_msg, (const uint8_t*) &angle_cmd);
-    if (encoding_result == MAVLINK_ENCODING_FAIL) {
-        exit(-1);
-    }
-
-    uint8_t result2 = Mavlink_airside_encoder(MESSAGE_ID_TIMESTAMP, &encoded_msg2, (const uint8_t*) &timestamp);
-    if (result2 == MAVLINK_ENCODING_FAIL) {
-        exit(-1);
-    }
-
-    updateWidget(encoded_msg);
-    updateWidget(encoded_msg2);
-
+    ui->data_timestampOfMeasurements->setNum(0);
+    ui->data_latitude->setNum(0);
+    ui->data_altitude->setNum(0);
+    ui->data_longitude->setNum(0);
+    ui->data_planePitch->setNum(0);
+    ui->data_planeRoll->setNum(0);
+    ui->data_planeYaw->setNum(0);
+    ui->data_cameraPitch->setNum(0);
+    ui->data_cameraRoll->setNum(0);
+    ui->data_cameraYaw->setNum(0);
+    ui->data_isLanded->setNum(0);
+    ui->data_flightPathFollowingErrorCode->setNum(0);
+    ui->data_editingFlightPathErrorCode->setNum(0);
+    ui->data_errorCode->setNum(0);
+    ui->data_currentWaypointIndex->setNum(0);
+    ui->data_currentWaypointID->setNum(0);
+    ui->data_homebaseInitialized->setNum(0);
+    ui->data_currentAirspeed->setNum(0);
 }
 
 PilotManager::~PilotManager()

@@ -2,11 +2,11 @@
 #define PILOTMANAGER_H
 
 #include <QMainWindow>
+#include <QObject>
 #include "Mavlink2/Groundside_Functions.hpp"
 #include "Mavlink2/Airside_Functions.hpp"
 #include "Mavlink2/Mavlink2_lib/common/common.h"
 
-#define POGI_Filepath ""
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class PilotManager; }
@@ -24,7 +24,7 @@ private:
     Ui::PilotManager *ui;
     void writeToJSON(char* jsonIndex);
 
-private slots:
+public slots:
     void updateWidget(mavlink_message_t encoded_msg);
 
 };
