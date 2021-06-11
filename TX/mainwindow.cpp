@@ -129,7 +129,8 @@ void MainWindow::on_sendInfoButton_clicked()
 
 
     int numWaypoints = ui->setWaypointNumberEdit->value();
-    convertMessage(QString::number(numWaypoints), MESSAGE_ID_NUM_WAYPOINTS);
+    convertMessage(numWaypoints == 0 ? "" : QString::number(numWaypoints),
+                   MESSAGE_ID_NUM_WAYPOINTS);
 
     if (!(ui->waypointScrollAreaWidgetContents->layout() == nullptr || numWaypoints == 0))
     {
@@ -177,6 +178,8 @@ void MainWindow::convertMessage(QList<QString> data, PIGO_Message_IDs_e msg_id){
     mavlink_message_t encoded_msg;
     memset(&encoded_msg, 0x00, sizeof(mavlink_message_t));
 
+    uint8_t encoderStatus{};
+
     if (msg_id == MESSAGE_ID_HOMEBASE || msg_id == MESSAGE_ID_WAYPOINTS){
         PIGO_WAYPOINTS_t data_transferred{};
         data_transferred.latitude = data[0].toInt();
@@ -185,7 +188,7 @@ void MainWindow::convertMessage(QList<QString> data, PIGO_Message_IDs_e msg_id){
         data_transferred.turnRadius = data[3].toInt();
         data_transferred.waypointType = data[4].toInt();
 
-        uint8_t encoderStatus = Mavlink_airside_encoder(msg_id, &encoded_msg, (const uint8_t*) &data_transferred);
+        encoderStatus = Mavlink_airside_encoder(msg_id, &encoded_msg, (const uint8_t*) &data_transferred);
 
     }
     else if (msg_id == MESSAGE_ID_GPS_LANDING_SPOT){
@@ -195,7 +198,7 @@ void MainWindow::convertMessage(QList<QString> data, PIGO_Message_IDs_e msg_id){
         data_transferred.altitude = data[2].toInt();
         data_transferred.landingDirection = data[3].toInt();
 
-        uint8_t encoderStatus = Mavlink_airside_encoder(msg_id, &encoded_msg, (const uint8_t*) &data_transferred);
+       encoderStatus = Mavlink_airside_encoder(msg_id, &encoded_msg, (const uint8_t*) &data_transferred);
     }
     else if (msg_id == MESSAGE_ID_GROUND_CMD || msg_id == MESSAGE_ID_GIMBAL_CMD){
         PIGO_GIMBAL_t data_transferred{};
@@ -203,8 +206,7 @@ void MainWindow::convertMessage(QList<QString> data, PIGO_Message_IDs_e msg_id){
         data_transferred.pitch = data[0].toInt();
         data_transferred.yaw = data[1].toInt();
 
-        uint8_t encoderStatus = Mavlink_airside_encoder(msg_id, &encoded_msg, (const uint8_t*) &data_transferred);
+        encoderStatus = Mavlink_airside_encoder(msg_id, &encoded_msg, (const uint8_t*) &data_transferred);
     }
-
     return;
 }
