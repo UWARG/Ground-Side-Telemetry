@@ -24,8 +24,9 @@
 
 #include "Mavlink2_lib/common/mavlink.h"
 #include "Airside_Functions.hpp"
+#include <iostream>
 
-mavlink_encoding_status_t Mavlink_airside_encoder(POGI_Message_IDs_e msgID,
+mavlink_encoding_status_t Mavlink_airside_encoder(PIGO_Message_IDs_e msgID,
                                                   mavlink_message_t *message,
                                                   const uint8_t *struct_ptr)
 {
