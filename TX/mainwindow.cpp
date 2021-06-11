@@ -24,7 +24,7 @@ void MainWindow::addWaypoint(int num, QFormLayout *layout, int maxNum)
     layout->addRow("Turn Radius", new QLineEdit);
 
     QComboBox *waypointType = new QComboBox();
-    waypointType->addItems({"0 - Path Follow", "1 - Orbit", "2 - Hold"});
+    waypointType->addItems({"", "0 - Path Follow", "1 - Orbit", "2 - Hold"});
 
     layout->addRow("Waypoint Type", waypointType);
 
@@ -49,6 +49,16 @@ void MainWindow::remove(QLayout *layout)
             delete child->widget();
         }
         delete child;
+    }
+}
+
+QString MainWindow::enumSelection(QComboBox* field){
+    QString text = field->currentText();
+    if (text == ""){
+        return "";
+    }
+    else{
+        return (QString)(text[0]);
     }
 }
 
@@ -77,22 +87,49 @@ void MainWindow::on_setWaypointNumberButton_clicked()
 
 void MainWindow::on_sendInfoButton_clicked()
 {
-    QString waypointModifyFlightPathCommand = ui->waypointModifyFlightPathCommandBox->currentText();
+    QString waypointModifyFlightPathCommand = enumSelection(ui->waypointModifyFlightPathCommandBox);
+    convertMessage(waypointModifyFlightPathCommand, MESSAGE_ID_WAYPOINT_MODIFY_PATH_CMD);
+
     QString waypointNextDirectionCommand = ui->waypointNextDirectionsCommandBox->currentText();
-    QString initalizingHomeBase = ui->initializingHomeBaseBox->currentText();
+    convertMessage(waypointNextDirectionCommand, MESSAGE_ID_WAYPOINT_NEXT_DIRECTIONS_CMD);
+
+    QString initalizingHomeBase = enumSelection(ui->initializingHomeBaseBox);
+    convertMessage(initalizingHomeBase, MESSAGE_ID_INITIALIZING_HOMEBASE);
+
     QString holdingAltitude = ui->holdingAltitudeEdit->text();
+    convertMessage(holdingAltitude, MESSAGE_ID_HOLDING_ALTITUDE);
+
     QString holdingTurnRadius = ui->holdingTurnRadiusEdit->text();
-    QString holdingTurnDirection = ui->holdingTurnDirectionBox->currentText();
+    convertMessage(holdingTurnRadius, MESSAGE_ID_HOLDING_TURN_RADIUS);
+
+    QString holdingTurnDirection = enumSelection(ui->holdingTurnDirectionBox);
+    convertMessage(holdingTurnDirection, MESSAGE_ID_HOLDING_TURN_DIRECTION);
+
     QString flightPathModifyNextId = ui->flightPathModifyNextIdEdit->text();
+    convertMessage(flightPathModifyNextId, MESSAGE_ID_PATH_MODIFY_NEXT_LD);
+
     QString flightPathModifyPrevId = ui->flightPathModifyPrevIdEdit->text();
+    convertMessage(flightPathModifyPrevId, MESSAGE_ID_PATH_MODIFY_PREV_LD);
+
     QString flightPathModifyId = ui->flightPathModifyIdEdit->text();
+    convertMessage(flightPathModifyId, MESSAGE_ID_PATH_MODIFY_LD);
+
     QString homeBaseLatitude = ui->homeBaseLatitudeEdit->text();
     QString homeBaseLongitude = ui->homeBaseLongitudeEdit->text();
     QString homeBaseAltitude = ui->homeBaseAltitudeEdit->text();
     QString homeBaseTurnRadius = ui->homeBaseTurnRadiusdit->text();
-    QString homeBaseWaypointType = ui->homeBaseWaypointTypeBox->currentText();
+    QString homeBaseWaypointType = enumSelection(ui->homeBaseWaypointTypeBox);
+
+    QList<QString> homeBaseInfo = {homeBaseLatitude,
+                                   homeBaseLongitude,
+                                   homeBaseAltitude,
+                                   homeBaseTurnRadius,
+                                   homeBaseWaypointType};
+    convertMessage(homeBaseInfo, MESSAGE_ID_HOMEBASE);
+
 
     int numWaypoints = ui->setWaypointNumberEdit->value();
+    convertMessage(QString::number(numWaypoints), MESSAGE_ID_NUM_WAYPOINTS);
 
     if (!(ui->waypointScrollAreaWidgetContents->layout() == nullptr || numWaypoints == 0))
     {
@@ -100,17 +137,74 @@ void MainWindow::on_sendInfoButton_clicked()
 
         for (int i{}; i < numWaypoints; i++)
         {
+            QString waypointLatitude = qobject_cast<QLineEdit *>(layout->itemAt(i * 14 + 4)->widget())->text();
+            QString waypointLongitude = qobject_cast<QLineEdit *>(layout->itemAt(i * 14 + 6)->widget())->text();
+            QString waypointAltitude = qobject_cast<QLineEdit *>(layout->itemAt(i * 14 + 8)->widget())->text();
+            QString waypointTurnRadius = qobject_cast<QLineEdit *>(layout->itemAt(i * 14 + 10)->widget())->text();
+            QString waypointType = enumSelection(qobject_cast<QComboBox *>(layout->itemAt(i * 14 + 12)->widget()));
 
-            qDebug() << "Waypoint " << i + 1;
-            qDebug() << "Latitude: " << qobject_cast<QLineEdit *>(layout->itemAt(i * 14 + 4)->widget())->text();
-            qDebug() << "Longitude: " << qobject_cast<QLineEdit *>(layout->itemAt(i * 14 + 6)->widget())->text();
-            qDebug() << "Altitude: " << qobject_cast<QLineEdit *>(layout->itemAt(i * 14 + 8)->widget())->text();
-            qDebug() << "Turn Radius: " << qobject_cast<QLineEdit *>(layout->itemAt(i * 14 + 10)->widget())->text();
-            qDebug() << "Waypoint Type: " << qobject_cast<QComboBox *>(layout->itemAt(i * 14 + 12)->widget())->currentText() << "\n\n";
+            QList<QString> waypointInfo = {waypointLatitude,
+                                           waypointLongitude,
+                                           waypointAltitude,
+                                           waypointTurnRadius,
+                                           waypointType};
+
+            convertMessage(waypointInfo, MESSAGE_ID_WAYPOINTS);
+        }
+    }
+}
+
+void MainWindow::convertMessage(QString data, PIGO_Message_IDs_e msg_id){
+    if (data == ""){
+        return;
+    }
+
+    int data_int = data.toInt();
+
+    mavlink_message_t encoded_msg;
+    memset(&encoded_msg, 0x00, sizeof(mavlink_message_t));
+
+    uint8_t encoderStatus = Mavlink_airside_encoder(msg_id, &encoded_msg, (const uint8_t*) &data);
+}
+
+void MainWindow::convertMessage(QList<QString> data, PIGO_Message_IDs_e msg_id){
+    for (int i{}; i < data.length(); i++){
+        if (data[i] == ""){
+            return;
         }
     }
 
+    mavlink_message_t encoded_msg;
+    memset(&encoded_msg, 0x00, sizeof(mavlink_message_t));
 
+    if (msg_id == MESSAGE_ID_HOMEBASE || msg_id == MESSAGE_ID_WAYPOINTS){
+        PIGO_WAYPOINTS_t data_transferred{};
+        data_transferred.latitude = data[0].toInt();
+        data_transferred.longitude = data[1].toInt();
+        data_transferred.altitude = data[2].toInt();
+        data_transferred.turnRadius = data[3].toInt();
+        data_transferred.waypointType = data[4].toInt();
 
+        uint8_t encoderStatus = Mavlink_airside_encoder(msg_id, &encoded_msg, (const uint8_t*) &data_transferred);
 
+    }
+    else if (msg_id == MESSAGE_ID_GPS_LANDING_SPOT){
+        PIGO_GPS_LANDING_SPOT_t data_transferred{};
+        data_transferred.latitude = data[0].toInt();
+        data_transferred.longitude = data[1].toInt();
+        data_transferred.altitude = data[2].toInt();
+        data_transferred.landingDirection = data[3].toInt();
+
+        uint8_t encoderStatus = Mavlink_airside_encoder(msg_id, &encoded_msg, (const uint8_t*) &data_transferred);
+    }
+    else if (msg_id == MESSAGE_ID_GROUND_CMD || msg_id == MESSAGE_ID_GIMBAL_CMD){
+        PIGO_GIMBAL_t data_transferred{};
+
+        data_transferred.pitch = data[0].toInt();
+        data_transferred.yaw = data[1].toInt();
+
+        uint8_t encoderStatus = Mavlink_airside_encoder(msg_id, &encoded_msg, (const uint8_t*) &data_transferred);
+    }
+
+    return;
 }

@@ -28,6 +28,11 @@
        <widget class="QComboBox" name="waypointModifyFlightPathCommandBox">
         <item>
          <property name="text">
+          <string/>
+         </property>
+        </item>
+        <item>
+         <property name="text">
           <string>0 - No Flight Path Edit</string>
          </property>
         </item>
@@ -254,6 +259,11 @@
        <widget class="QComboBox" name="waypointNextDirectionsCommandBox">
         <item>
          <property name="text">
+          <string/>
+         </property>
+        </item>
+        <item>
+         <property name="text">
           <string>0 - Regular Path Following</string>
          </property>
         </item>
@@ -266,6 +276,11 @@
       </item>
       <item row="3" column="1">
        <widget class="QComboBox" name="initializingHomeBaseBox">
+        <item>
+         <property name="text">
+          <string/>
+         </property>
+        </item>
         <item>
          <property name="text">
           <string>0 - No</string>
@@ -282,6 +297,11 @@
        <widget class="QComboBox" name="holdingTurnDirectionBox">
         <item>
          <property name="text">
+          <string/>
+         </property>
+        </item>
+        <item>
+         <property name="text">
           <string>0 - Clockwise</string>
          </property>
         </item>
@@ -294,6 +314,11 @@
       </item>
       <item row="18" column="1">
        <widget class="QComboBox" name="homeBaseWaypointTypeBox">
+        <item>
+         <property name="text">
+          <string/>
+         </property>
+        </item>
         <item>
          <property name="text">
           <string>0 - Path Follow</string>
