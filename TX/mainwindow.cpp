@@ -176,7 +176,7 @@ void MainWindow::convertMessage(QString data, PIGO_Message_IDs_e msg_id){
     mavlink_message_t encoded_msg;
     memset(&encoded_msg, 0x00, sizeof(mavlink_message_t));
 
-    uint8_t encoderStatus = Mavlink_airside_encoder(msg_id, &encoded_msg, (const uint8_t*) &data);
+    uint8_t encoderStatus = Mavlink_airside_encoder(msg_id, &encoded_msg, (const uint8_t*) &data_int);
 }
 
 void MainWindow::convertMessage(QList<QString> data, PIGO_Message_IDs_e msg_id){
