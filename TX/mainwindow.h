@@ -38,6 +38,8 @@ public:
     void convertMessage(QList<QString> data, PIGO_Message_IDs_e msg_id);
 
     QFileSystemWatcher *watcher;
+
+    uint32_t toInt32(float);
 private slots:
 
     void on_setWaypointNumberButton_clicked();

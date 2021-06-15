@@ -55,6 +55,11 @@ void MainWindow::remove(QLayout *layout)
     }
 }
 
+uint32_t MainWindow::toInt32(float f_value){
+    uint32_t* f_value_Int32 = reinterpret_cast<uint32_t*>(&f_value);
+    return *f_value_Int32;
+}
+
 void MainWindow::fileChanged(const QString & path)
 {
    if (QFile::exists(path)) {
@@ -76,8 +81,8 @@ void MainWindow::fileChanged(const QString & path)
   QString beginLanding = QString::number((int)j["beginLanding"]);
   convertMessage(beginLanding, MESSAGE_ID_BEGIN_LANDING);
 
-  QString groundHeading = QString::number((int)j["groundCommands"]["heading"]);
-  QString groundLatestDistance = QString::number((int)j["groundCommands"]["latestDistance"]);
+  QString groundHeading = QString::number((float)j["groundCommands"]["heading"]);
+  QString groundLatestDistance = QString::number((float)j["groundCommands"]["latestDistance"]);
 
   QList<QString> groundInfo = {groundHeading,
                                groundLatestDistance
@@ -86,8 +91,8 @@ void MainWindow::fileChanged(const QString & path)
   convertMessage(groundInfo, MESSAGE_ID_GROUND_CMD);
 
 
-  QString gimbalPitch = QString::number((int)j["gimbalCommands"]["pitch"]);
-  QString gimbalYaw = QString::number((int)j["gimbalCommands"]["yaw"]);
+  QString gimbalPitch = QString::number((float)j["gimbalCommands"]["pitch"]);
+  QString gimbalYaw = QString::number((float)j["gimbalCommands"]["yaw"]);
 
   QList<QString> gimbalInfo = {gimbalPitch,
                                gimbalYaw
@@ -99,7 +104,7 @@ void MainWindow::fileChanged(const QString & path)
   QString gpsLat = QString::number((int)j["CVGpsCoordinatesOfLandingSpot"]["latitude"]);
   QString gpsLon = QString::number((int)j["CVGpsCoordinatesOfLandingSpot"]["longitude"]);
   QString gpsAlt = QString::number((int)j["CVGpsCoordinatesOfLandingSpot"]["altitude"]);
-  QString gpsDOL = QString::number((int)j["CVGpsCoordinatesOfLandingSpot"]["direction of landing"]);
+  QString gpsDOL = QString::number((float)j["CVGpsCoordinatesOfLandingSpot"]["direction of landing"]);
 
   QList<QString> gpsInfo = {gpsLat,
                             gpsLon,
@@ -242,9 +247,7 @@ void MainWindow::convertMessage(QList<QString> data, PIGO_Message_IDs_e msg_id){
         data_transferred.latitude = data[0].toInt();
         data_transferred.longitude = data[1].toInt();
         data_transferred.altitude = data[2].toInt();
-        float turnRadius = data[3].toFloat();
-        uint32_t* turnRadiusInt32 = reinterpret_cast<uint32_t*>(&turnRadius);
-        data_transferred.turnRadius = *turnRadiusInt32;
+        data_transferred.turnRadius = toInt32(data[3].toFloat());
         data_transferred.waypointType = data[4].toInt();
 
         encoderStatus = Mavlink_airside_encoder(msg_id, &encoded_msg, (const uint8_t*) &data_transferred);
@@ -261,8 +264,8 @@ void MainWindow::convertMessage(QList<QString> data, PIGO_Message_IDs_e msg_id){
     else if (msg_id == MESSAGE_ID_GROUND_CMD || msg_id == MESSAGE_ID_GIMBAL_CMD){
         PIGO_GIMBAL_t data_transferred{};
 
-        data_transferred.pitch = data[0].toInt();
-        data_transferred.yaw = data[1].toInt();
+        data_transferred.pitch = toInt32(data[0].toFloat());
+        data_transferred.yaw = toInt32(data[1].toFloat());
 
         encoderStatus = Mavlink_airside_encoder(msg_id, &encoded_msg, (const uint8_t*) &data_transferred);
     }
@@ -271,9 +274,7 @@ void MainWindow::convertMessage(QList<QString> data, PIGO_Message_IDs_e msg_id){
         data_transferred.latitude = data[0].toInt();
         data_transferred.longitude = data[1].toInt();
         data_transferred.altitude = data[2].toInt();
-        float landingDirection = data[3].toFloat();
-        uint32_t* landingDirectionInt32 = reinterpret_cast<uint32_t*>(&landingDirection);
-        data_transferred.landingDirection = *landingDirectionInt32;
+        data_transferred.landingDirection = toInt32(data[3].toFloat());
 
         encoderStatus = Mavlink_airside_encoder(msg_id, &encoded_msg, (const uint8_t*) &data_transferred);
     }
