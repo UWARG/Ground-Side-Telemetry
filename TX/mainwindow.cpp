@@ -196,11 +196,12 @@ void MainWindow::convertMessage(QList<QString> data, PIGO_Message_IDs_e msg_id){
         data_transferred.latitude = data[0].toInt();
         data_transferred.longitude = data[1].toInt();
         data_transferred.altitude = data[2].toInt();
-        data_transferred.turnRadius = data[3].toInt();
+        float turnRadius = data[3].toFloat();
+        uint32_t* turnRadiusInt32 = reinterpret_cast<uint32_t*>(&turnRadius);
+        data_transferred.turnRadius = *turnRadiusInt32;
         data_transferred.waypointType = data[4].toInt();
 
         encoderStatus = Mavlink_airside_encoder(msg_id, &encoded_msg, (const uint8_t*) &data_transferred);
-
     }
     else if (msg_id == MESSAGE_ID_GPS_LANDING_SPOT){
         PIGO_GPS_LANDING_SPOT_t data_transferred{};
