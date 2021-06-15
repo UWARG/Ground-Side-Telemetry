@@ -13,6 +13,9 @@
 #include <iostream>
 #include <QFileSystemWatcher>
 #include <QFile>
+#include <json.hpp>
+
+using json = nlohmann::json;
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }

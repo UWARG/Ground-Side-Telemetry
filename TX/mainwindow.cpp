@@ -7,7 +7,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     watcher = new QFileSystemWatcher(this);
     connect(watcher, SIGNAL(fileChanged(const QString &)), this, SLOT(fileChanged(const QString &)));
-    watcher->addPath("C:\\Users\\basel\\OneDrive\\Desktop\\Waterloo\\Club Work\\UWARG\\Repos\\Files to Test\\BaselTest.txt");
+    watcher->addPath("C:\\Users\\basel\\OneDrive\\Desktop\\Waterloo\\Club Work\\UWARG\\Repos\\Files to Test\\CVData.json");
 }
 
 MainWindow::~MainWindow()
@@ -60,7 +60,53 @@ void MainWindow::fileChanged(const QString & path)
    if (QFile::exists(path)) {
         watcher->addPath(path);
     }
-  qDebug() << "FILE CHANGED";
+
+  QFile file(path);
+  file.open(QFile::ReadOnly | QFile::Text);
+  QTextStream in(&file);
+  QString text = in.readAll();
+
+
+  std::string current_locale_text = text.toLocal8Bit().constData();
+  json j = json::parse(current_locale_text);
+
+  QString beginTakeoff = QString::number((int)j["beginTakeoff"]);
+  convertMessage(beginTakeoff, MESSAGE_ID_BEGIN_TAKEOFF);
+
+  QString beginLanding = QString::number((int)j["beginLanding"]);
+  convertMessage(beginLanding, MESSAGE_ID_BEGIN_LANDING);
+
+  QString groundHeading = QString::number((int)j["groundCommands"]["heading"]);
+  QString groundLatestDistance = QString::number((int)j["groundCommands"]["latestDistance"]);
+
+  QList<QString> groundInfo = {groundHeading,
+                               groundLatestDistance
+                              };
+
+  convertMessage(groundInfo, MESSAGE_ID_GROUND_CMD);
+
+
+  QString gimbalPitch = QString::number((int)j["gimbalCommands"]["pitch"]);
+  QString gimbalYaw = QString::number((int)j["gimbalCommands"]["yaw"]);
+
+  QList<QString> gimbalInfo = {gimbalPitch,
+                               gimbalYaw
+                              };
+
+  convertMessage(gimbalInfo, MESSAGE_ID_GIMBAL_CMD);
+
+
+  QString gpsLat = QString::number((int)j["CVGpsCoordinatesOfLandingSpot"]["latitude"]);
+  QString gpsLon = QString::number((int)j["CVGpsCoordinatesOfLandingSpot"]["longitude"]);
+  QString gpsAlt = QString::number((int)j["CVGpsCoordinatesOfLandingSpot"]["altitude"]);
+  QString gpsDOL = QString::number((int)j["CVGpsCoordinatesOfLandingSpot"]["direction of landing"]);
+
+  QList<QString> gpsInfo = {gpsLat,
+                            gpsLon,
+                            gpsAlt,
+                            gpsDOL
+                           };
+  convertMessage(gpsInfo, MESSAGE_ID_GPS_LANDING_SPOT);
 }
 
 QString MainWindow::enumSelection(QComboBox* field){
@@ -217,6 +263,17 @@ void MainWindow::convertMessage(QList<QString> data, PIGO_Message_IDs_e msg_id){
 
         data_transferred.pitch = data[0].toInt();
         data_transferred.yaw = data[1].toInt();
+
+        encoderStatus = Mavlink_airside_encoder(msg_id, &encoded_msg, (const uint8_t*) &data_transferred);
+    }
+    else if (msg_id == MESSAGE_ID_GPS_LANDING_SPOT){
+        PIGO_GPS_LANDING_SPOT_t data_transferred{};
+        data_transferred.latitude = data[0].toInt();
+        data_transferred.longitude = data[1].toInt();
+        data_transferred.altitude = data[2].toInt();
+        float landingDirection = data[3].toFloat();
+        uint32_t* landingDirectionInt32 = reinterpret_cast<uint32_t*>(&landingDirection);
+        data_transferred.landingDirection = *landingDirectionInt32;
 
         encoderStatus = Mavlink_airside_encoder(msg_id, &encoded_msg, (const uint8_t*) &data_transferred);
     }

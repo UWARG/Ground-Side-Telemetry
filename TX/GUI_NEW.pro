@@ -390,6 +390,7 @@ HEADERS += \
     Mavlink/Mavlink2_lib/uAvionix/testsuite.h \
     Mavlink/Mavlink2_lib/uAvionix/uAvionix.h \
     Mavlink/Mavlink2_lib/uAvionix/version.h \
+    json.hpp \
     mainwindow.h
 
 FORMS += \
