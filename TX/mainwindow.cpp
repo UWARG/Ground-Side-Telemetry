@@ -5,6 +5,9 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    watcher = new QFileSystemWatcher(this);
+    connect(watcher, SIGNAL(fileChanged(const QString &)), this, SLOT(fileChanged(const QString &)));
+    watcher->addPath("C:\\Users\\basel\\OneDrive\\Desktop\\Waterloo\\Club Work\\UWARG\\Repos\\Files to Test\\BaselTest.txt");
 }
 
 MainWindow::~MainWindow()
@@ -50,6 +53,14 @@ void MainWindow::remove(QLayout *layout)
         }
         delete child;
     }
+}
+
+void MainWindow::fileChanged(const QString & path)
+{
+   if (QFile::exists(path)) {
+        watcher->addPath(path);
+    }
+  qDebug() << "FILE CHANGED";
 }
 
 QString MainWindow::enumSelection(QComboBox* field){

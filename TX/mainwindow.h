@@ -11,6 +11,8 @@
 #include <QComboBox>
 #include <Mavlink/Airside_Functions.hpp>
 #include <iostream>
+#include <QFileSystemWatcher>
+#include <QFile>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -31,11 +33,13 @@ public:
 
     void convertMessage(QString data, PIGO_Message_IDs_e msg_id);
     void convertMessage(QList<QString> data, PIGO_Message_IDs_e msg_id);
+
+    QFileSystemWatcher *watcher;
 private slots:
 
     void on_setWaypointNumberButton_clicked();
-
     void on_sendInfoButton_clicked();
+    void fileChanged(const QString & path);
 
 private:
     Ui::MainWindow *ui;
