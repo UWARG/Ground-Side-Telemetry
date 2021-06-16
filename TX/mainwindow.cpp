@@ -8,11 +8,34 @@ MainWindow::MainWindow(QWidget *parent)
     watcher = new QFileSystemWatcher(this);
     connect(watcher, SIGNAL(fileChanged(const QString &)), this, SLOT(fileChanged(const QString &)));
     watcher->addPath("C:\\Users\\basel\\OneDrive\\Desktop\\Waterloo\\Club Work\\UWARG\\Repos\\Files to Test\\CVData.json");
+    serial = new serialclass("COM3", QSerialPort::Baud9600, QSerialPort::OneStop, QSerialPort::NoFlowControl, QSerialPort::Data8);
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+QByteArray MainWindow::mavlinkToByteArray(mavlink_message_t mav_message){
+    QByteArray array{};
+    array.append((char*)&mav_message, sizeof(mavlink_message_t));
+    return array;
+
+//    mav_message.checksum; // 16
+//    mav_message.magic; // 8
+//    mav_message.len; // 8
+//    mav_message.incompat_flags; // 8
+//    mav_message.compat_flags; // 8
+//    mav_message.seq; // 8
+//    mav_message.sysid; // 8
+//    mav_message.compid; // 8
+//    mav_message.msgid; // 32
+//    mav_message.payload64; // 64
+//    mav_message.ck; // 8
+//    mav_message.signature; // 8
+//   const uint8_t *rawData = img.GetDataPointer();
+//    const char *c = reinterpret_cast<const char *>(rawData);
+//    QByteArray ba(c);
 }
 
 void MainWindow::addWaypoint(int num, QFormLayout *layout, int maxNum)
@@ -228,6 +251,8 @@ void MainWindow::convertMessage(QString data, PIGO_Message_IDs_e msg_id){
     memset(&encoded_msg, 0x00, sizeof(mavlink_message_t));
 
     uint8_t encoderStatus = Mavlink_airside_encoder(msg_id, &encoded_msg, (const uint8_t*) &data_int);
+
+    serial->write(mavlinkToByteArray(encoded_msg));
 }
 
 void MainWindow::convertMessage(QList<QString> data, PIGO_Message_IDs_e msg_id){
@@ -278,5 +303,7 @@ void MainWindow::convertMessage(QList<QString> data, PIGO_Message_IDs_e msg_id){
 
         encoderStatus = Mavlink_airside_encoder(msg_id, &encoded_msg, (const uint8_t*) &data_transferred);
     }
+    serial->write(mavlinkToByteArray(encoded_msg));
+
     return;
 }

@@ -14,6 +14,7 @@
 #include <QFileSystemWatcher>
 #include <QFile>
 #include <json.hpp>
+#include <serialclass.h>
 
 using json = nlohmann::json;
 
@@ -40,6 +41,10 @@ public:
     QFileSystemWatcher *watcher;
 
     uint32_t toInt32(float);
+    serialclass *serial;
+
+    QByteArray mavlinkToByteArray(mavlink_message_t mav_message);
+
 private slots:
 
     void on_setWaypointNumberButton_clicked();

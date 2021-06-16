@@ -1,4 +1,5 @@
-QT       += core gui
+QT  += core gui
+QT  += serialport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -11,7 +12,8 @@ CONFIG += c++11
 SOURCES += \
     Mavlink/Airside_Functions.cpp \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    serialclass.cpp
 
 HEADERS += \
     Mavlink/Airside_Functions.hpp \
@@ -391,7 +393,8 @@ HEADERS += \
     Mavlink/Mavlink2_lib/uAvionix/uAvionix.h \
     Mavlink/Mavlink2_lib/uAvionix/version.h \
     json.hpp \
-    mainwindow.h
+    mainwindow.h \
+    serialclass.h
 
 FORMS += \
     mainwindow.ui
