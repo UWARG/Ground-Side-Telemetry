@@ -188,6 +188,7 @@ void MainWindow::on_readingButton_clicked()
 void MainWindow::on_browseButton_clicked()
 {
     CVFilePath = QFileDialog::getOpenFileName(this, "Open the CV File", "C:\\", "JSON File (*.json)");
+    watcher->addPath(CVFilePath);
     QFile file(CVFilePath);
     QFileInfo fileInfo(file.fileName());
     QString filename(fileInfo.fileName());
