@@ -27,23 +27,28 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
+    // Constructor and Destructor
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+    // Main Functions:
     void addWaypoint(int num, QFormLayout* layout, int maxNum);
-
-    void remove(QLayout* layout);
-    QString enumSelection(QComboBox* field);
-
     void convertMessage(QString data, PIGO_Message_IDs_e msg_id);
     void convertMessage(QList<QString> data, PIGO_Message_IDs_e msg_id);
 
-    QFileSystemWatcher *watcher;
 
+    // Helper Functions
+    void remove(QLayout* layout);
+    QString enumSelection(QComboBox* field);
+    QByteArray mavlinkToByteArray(mavlink_message_t mav_message);
     uint32_t toInt32(float);
+
+
+    // Member Variables
+    QFileSystemWatcher *watcher;
     serialclass *serial;
 
-    QByteArray mavlinkToByteArray(mavlink_message_t mav_message);
+
 
 private slots:
 

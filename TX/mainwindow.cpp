@@ -16,136 +16,9 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-QByteArray MainWindow::mavlinkToByteArray(mavlink_message_t mav_message){
-    QByteArray array{};
-    array.append((char*)&mav_message, sizeof(mavlink_message_t));
-    return array;
-
-//    mav_message.checksum; // 16
-//    mav_message.magic; // 8
-//    mav_message.len; // 8
-//    mav_message.incompat_flags; // 8
-//    mav_message.compat_flags; // 8
-//    mav_message.seq; // 8
-//    mav_message.sysid; // 8
-//    mav_message.compid; // 8
-//    mav_message.msgid; // 32
-//    mav_message.payload64; // 64
-//    mav_message.ck; // 8
-//    mav_message.signature; // 8
-//   const uint8_t *rawData = img.GetDataPointer();
-//    const char *c = reinterpret_cast<const char *>(rawData);
-//    QByteArray ba(c);
-}
-
-void MainWindow::addWaypoint(int num, QFormLayout *layout, int maxNum)
-{
-
-    layout->addRow(new QLabel("Waypoint"), new QLabel(QString::number(num)));
-    layout->addItem(new QSpacerItem(0, 3, QSizePolicy::Fixed));
-
-    layout->addRow("Latitude", new QLineEdit);
-    layout->addRow("Longitude", new QLineEdit);
-    layout->addRow("Altitude", new QLineEdit);
-    layout->addRow("Turn Radius", new QLineEdit);
-
-    QComboBox *waypointType = new QComboBox();
-    waypointType->addItems({"", "0 - Path Follow", "1 - Orbit", "2 - Hold"});
-
-    layout->addRow("Waypoint Type", waypointType);
-
-    if (num != maxNum)
-    {
-        layout->addItem(new QSpacerItem(0, 25, QSizePolicy::Fixed));
-    }
-}
-
-void MainWindow::remove(QLayout *layout)
-{
-    QLayoutItem *child;
-    while (layout->count() != 0)
-    {
-        child = layout->takeAt(0);
-        if (child->layout() != 0)
-        {
-            remove(child->layout());
-        }
-        else if (child->widget() != 0)
-        {
-            delete child->widget();
-        }
-        delete child;
-    }
-}
-
-uint32_t MainWindow::toInt32(float f_value){
-    uint32_t* f_value_Int32 = reinterpret_cast<uint32_t*>(&f_value);
-    return *f_value_Int32;
-}
-
-void MainWindow::fileChanged(const QString & path)
-{
-   if (QFile::exists(path)) {
-        watcher->addPath(path);
-    }
-
-  QFile file(path);
-  file.open(QFile::ReadOnly | QFile::Text);
-  QTextStream in(&file);
-  QString text = in.readAll();
-
-
-  std::string current_locale_text = text.toLocal8Bit().constData();
-  json j = json::parse(current_locale_text);
-
-  QString beginTakeoff = QString::number((int)j["beginTakeoff"]);
-  convertMessage(beginTakeoff, MESSAGE_ID_BEGIN_TAKEOFF);
-
-  QString beginLanding = QString::number((int)j["beginLanding"]);
-  convertMessage(beginLanding, MESSAGE_ID_BEGIN_LANDING);
-
-  QString groundHeading = QString::number((float)j["groundCommands"]["heading"]);
-  QString groundLatestDistance = QString::number((float)j["groundCommands"]["latestDistance"]);
-
-  QList<QString> groundInfo = {groundHeading,
-                               groundLatestDistance
-                              };
-
-  convertMessage(groundInfo, MESSAGE_ID_GROUND_CMD);
-
-
-  QString gimbalPitch = QString::number((float)j["gimbalCommands"]["pitch"]);
-  QString gimbalYaw = QString::number((float)j["gimbalCommands"]["yaw"]);
-
-  QList<QString> gimbalInfo = {gimbalPitch,
-                               gimbalYaw
-                              };
-
-  convertMessage(gimbalInfo, MESSAGE_ID_GIMBAL_CMD);
-
-
-  QString gpsLat = QString::number((int)j["CVGpsCoordinatesOfLandingSpot"]["latitude"]);
-  QString gpsLon = QString::number((int)j["CVGpsCoordinatesOfLandingSpot"]["longitude"]);
-  QString gpsAlt = QString::number((int)j["CVGpsCoordinatesOfLandingSpot"]["altitude"]);
-  QString gpsDOL = QString::number((float)j["CVGpsCoordinatesOfLandingSpot"]["direction of landing"]);
-
-  QList<QString> gpsInfo = {gpsLat,
-                            gpsLon,
-                            gpsAlt,
-                            gpsDOL
-                           };
-  convertMessage(gpsInfo, MESSAGE_ID_GPS_LANDING_SPOT);
-}
-
-QString MainWindow::enumSelection(QComboBox* field){
-    QString text = field->currentText();
-    if (text == ""){
-        return "";
-    }
-    else{
-        return (QString)(text[0]);
-    }
-}
+///////////////////////////////////////////////////////////
+// SLOTS
+///////////////////////////////////////////////////////////
 
 void MainWindow::on_setWaypointNumberButton_clicked()
 {
@@ -240,6 +113,88 @@ void MainWindow::on_sendInfoButton_clicked()
     }
 }
 
+
+void MainWindow::fileChanged(const QString & path)
+{
+   if (QFile::exists(path)) {
+        watcher->addPath(path);
+    }
+
+  QFile file(path);
+  file.open(QFile::ReadOnly | QFile::Text);
+  QTextStream in(&file);
+  QString text = in.readAll();
+
+
+  std::string current_locale_text = text.toLocal8Bit().constData();
+  json j = json::parse(current_locale_text);
+
+  QString beginTakeoff = QString::number((int)j["beginTakeoff"]);
+  convertMessage(beginTakeoff, MESSAGE_ID_BEGIN_TAKEOFF);
+
+  QString beginLanding = QString::number((int)j["beginLanding"]);
+  convertMessage(beginLanding, MESSAGE_ID_BEGIN_LANDING);
+
+  QString groundHeading = QString::number((float)j["groundCommands"]["heading"]);
+  QString groundLatestDistance = QString::number((float)j["groundCommands"]["latestDistance"]);
+
+  QList<QString> groundInfo = {groundHeading,
+                               groundLatestDistance
+                              };
+
+  convertMessage(groundInfo, MESSAGE_ID_GROUND_CMD);
+
+
+  QString gimbalPitch = QString::number((float)j["gimbalCommands"]["pitch"]);
+  QString gimbalYaw = QString::number((float)j["gimbalCommands"]["yaw"]);
+
+  QList<QString> gimbalInfo = {gimbalPitch,
+                               gimbalYaw
+                              };
+
+  convertMessage(gimbalInfo, MESSAGE_ID_GIMBAL_CMD);
+
+
+  QString gpsLat = QString::number((int)j["CVGpsCoordinatesOfLandingSpot"]["latitude"]);
+  QString gpsLon = QString::number((int)j["CVGpsCoordinatesOfLandingSpot"]["longitude"]);
+  QString gpsAlt = QString::number((int)j["CVGpsCoordinatesOfLandingSpot"]["altitude"]);
+  QString gpsDOL = QString::number((float)j["CVGpsCoordinatesOfLandingSpot"]["direction of landing"]);
+
+  QList<QString> gpsInfo = {gpsLat,
+                            gpsLon,
+                            gpsAlt,
+                            gpsDOL
+                           };
+  convertMessage(gpsInfo, MESSAGE_ID_GPS_LANDING_SPOT);
+}
+
+
+///////////////////////////////////////////////////////////
+// MAIN FUNCITONS
+///////////////////////////////////////////////////////////
+
+void MainWindow::addWaypoint(int num, QFormLayout *layout, int maxNum)
+{
+
+    layout->addRow(new QLabel("Waypoint"), new QLabel(QString::number(num)));
+    layout->addItem(new QSpacerItem(0, 3, QSizePolicy::Fixed));
+
+    layout->addRow("Latitude", new QLineEdit);
+    layout->addRow("Longitude", new QLineEdit);
+    layout->addRow("Altitude", new QLineEdit);
+    layout->addRow("Turn Radius", new QLineEdit);
+
+    QComboBox *waypointType = new QComboBox();
+    waypointType->addItems({"", "0 - Path Follow", "1 - Orbit", "2 - Hold"});
+
+    layout->addRow("Waypoint Type", waypointType);
+
+    if (num != maxNum)
+    {
+        layout->addItem(new QSpacerItem(0, 25, QSizePolicy::Fixed));
+    }
+}
+
 void MainWindow::convertMessage(QString data, PIGO_Message_IDs_e msg_id){
     if (data == ""){
         return;
@@ -306,4 +261,47 @@ void MainWindow::convertMessage(QList<QString> data, PIGO_Message_IDs_e msg_id){
     serial->write(mavlinkToByteArray(encoded_msg));
 
     return;
+}
+
+///////////////////////////////////////////////////////////
+// HELPER FUNCTIONS
+///////////////////////////////////////////////////////////
+
+void MainWindow::remove(QLayout *layout)
+{
+    QLayoutItem *child;
+    while (layout->count() != 0)
+    {
+        child = layout->takeAt(0);
+        if (child->layout() != 0)
+        {
+            remove(child->layout());
+        }
+        else if (child->widget() != 0)
+        {
+            delete child->widget();
+        }
+        delete child;
+    }
+}
+
+QString MainWindow::enumSelection(QComboBox* field){
+    QString text = field->currentText();
+    if (text == ""){
+        return "";
+    }
+    else{
+        return (QString)(text[0]);
+    }
+}
+
+QByteArray MainWindow::mavlinkToByteArray(mavlink_message_t mav_message){
+    QByteArray array{};
+    array.append((char*)&mav_message, sizeof(mavlink_message_t));
+    return array;
+}
+
+uint32_t MainWindow::toInt32(float f_value){
+    uint32_t* f_value_Int32 = reinterpret_cast<uint32_t*>(&f_value);
+    return *f_value_Int32;
 }
