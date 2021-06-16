@@ -5,9 +5,10 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    allowReading = false;
+    CVFilePath = "";
     watcher = new QFileSystemWatcher(this);
     connect(watcher, SIGNAL(fileChanged(const QString &)), this, SLOT(fileChanged(const QString &)));
-    watcher->addPath("C:\\Users\\basel\\OneDrive\\Desktop\\Waterloo\\Club Work\\UWARG\\Repos\\Files to Test\\CVData.json");
     serial = new serialclass("COM3", QSerialPort::Baud9600, QSerialPort::OneStop, QSerialPort::NoFlowControl, QSerialPort::Data8);
 }
 
@@ -116,56 +117,82 @@ void MainWindow::on_sendInfoButton_clicked()
 
 void MainWindow::fileChanged(const QString & path)
 {
-   if (QFile::exists(path)) {
-        watcher->addPath(path);
+   if (allowReading){
+       if (QFile::exists(path)) {
+            watcher->addPath(path);
+        }
+
+      QFile file(path);
+      file.open(QFile::ReadOnly | QFile::Text);
+      QTextStream in(&file);
+      QString text = in.readAll();
+
+
+      std::string current_locale_text = text.toLocal8Bit().constData();
+      json j = json::parse(current_locale_text);
+
+      QString beginTakeoff = QString::number((int)j["beginTakeoff"]);
+      convertMessage(beginTakeoff, MESSAGE_ID_BEGIN_TAKEOFF);
+
+      QString beginLanding = QString::number((int)j["beginLanding"]);
+      convertMessage(beginLanding, MESSAGE_ID_BEGIN_LANDING);
+
+      QString groundHeading = QString::number((float)j["groundCommands"]["heading"]);
+      QString groundLatestDistance = QString::number((float)j["groundCommands"]["latestDistance"]);
+
+      QList<QString> groundInfo = {groundHeading,
+                                   groundLatestDistance
+                                  };
+
+      convertMessage(groundInfo, MESSAGE_ID_GROUND_CMD);
+
+
+      QString gimbalPitch = QString::number((float)j["gimbalCommands"]["pitch"]);
+      QString gimbalYaw = QString::number((float)j["gimbalCommands"]["yaw"]);
+
+      QList<QString> gimbalInfo = {gimbalPitch,
+                                   gimbalYaw
+                                  };
+
+      convertMessage(gimbalInfo, MESSAGE_ID_GIMBAL_CMD);
+
+
+      QString gpsLat = QString::number((int)j["CVGpsCoordinatesOfLandingSpot"]["latitude"]);
+      QString gpsLon = QString::number((int)j["CVGpsCoordinatesOfLandingSpot"]["longitude"]);
+      QString gpsAlt = QString::number((int)j["CVGpsCoordinatesOfLandingSpot"]["altitude"]);
+      QString gpsDOL = QString::number((float)j["CVGpsCoordinatesOfLandingSpot"]["direction of landing"]);
+
+      QList<QString> gpsInfo = {gpsLat,
+                                gpsLon,
+                                gpsAlt,
+                                gpsDOL
+                               };
+      convertMessage(gpsInfo, MESSAGE_ID_GPS_LANDING_SPOT);
+   }
+}
+
+void MainWindow::on_readingButton_clicked()
+{
+    if (allowReading){
+        ui->readingButton->setText("Start Reading");
+        allowReading = !allowReading;
+    }
+    else if (CVFilePath != ""){
+        ui->readingButton->setText("Stop Reading");
+        watcher->addPath(CVFilePath);
+        allowReading = !allowReading;
     }
 
-  QFile file(path);
-  file.open(QFile::ReadOnly | QFile::Text);
-  QTextStream in(&file);
-  QString text = in.readAll();
+}
 
-
-  std::string current_locale_text = text.toLocal8Bit().constData();
-  json j = json::parse(current_locale_text);
-
-  QString beginTakeoff = QString::number((int)j["beginTakeoff"]);
-  convertMessage(beginTakeoff, MESSAGE_ID_BEGIN_TAKEOFF);
-
-  QString beginLanding = QString::number((int)j["beginLanding"]);
-  convertMessage(beginLanding, MESSAGE_ID_BEGIN_LANDING);
-
-  QString groundHeading = QString::number((float)j["groundCommands"]["heading"]);
-  QString groundLatestDistance = QString::number((float)j["groundCommands"]["latestDistance"]);
-
-  QList<QString> groundInfo = {groundHeading,
-                               groundLatestDistance
-                              };
-
-  convertMessage(groundInfo, MESSAGE_ID_GROUND_CMD);
-
-
-  QString gimbalPitch = QString::number((float)j["gimbalCommands"]["pitch"]);
-  QString gimbalYaw = QString::number((float)j["gimbalCommands"]["yaw"]);
-
-  QList<QString> gimbalInfo = {gimbalPitch,
-                               gimbalYaw
-                              };
-
-  convertMessage(gimbalInfo, MESSAGE_ID_GIMBAL_CMD);
-
-
-  QString gpsLat = QString::number((int)j["CVGpsCoordinatesOfLandingSpot"]["latitude"]);
-  QString gpsLon = QString::number((int)j["CVGpsCoordinatesOfLandingSpot"]["longitude"]);
-  QString gpsAlt = QString::number((int)j["CVGpsCoordinatesOfLandingSpot"]["altitude"]);
-  QString gpsDOL = QString::number((float)j["CVGpsCoordinatesOfLandingSpot"]["direction of landing"]);
-
-  QList<QString> gpsInfo = {gpsLat,
-                            gpsLon,
-                            gpsAlt,
-                            gpsDOL
-                           };
-  convertMessage(gpsInfo, MESSAGE_ID_GPS_LANDING_SPOT);
+void MainWindow::on_browseButton_clicked()
+{
+    CVFilePath = QFileDialog::getOpenFileName(this, "Open the CV File", "C:\\", "JSON File (*.json)");
+    watcher->addPath(CVFilePath);
+    QFile file(CVFilePath);
+    QFileInfo fileInfo(file.fileName());
+    QString filename(fileInfo.fileName());
+    ui->fileNameEdit->setText(filename);
 }
 
 
