@@ -15,6 +15,10 @@
 #include <QFile>
 #include <json.hpp>
 #include <serialclass.h>
+#include <QPushButton>
+#include <QFileInfo>
+#include <QFileDialog>
+#include <QDir>
 
 using json = nlohmann::json;
 
@@ -47,6 +51,8 @@ public:
     // Member Variables
     QFileSystemWatcher *watcher;
     serialclass *serial;
+    QString CVFilePath;
+    bool allowReading;
 
 
 
@@ -55,6 +61,8 @@ private slots:
     void on_setWaypointNumberButton_clicked();
     void on_sendInfoButton_clicked();
     void fileChanged(const QString & path);
+    void on_readingButton_clicked();
+    void on_browseButton_clicked();
 
 private:
     Ui::MainWindow *ui;
