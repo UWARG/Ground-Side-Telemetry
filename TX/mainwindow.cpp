@@ -227,12 +227,41 @@ void MainWindow::convertMessage(QString data, PIGO_Message_IDs_e msg_id){
         return;
     }
 
-    int data_int = data.toInt();
-
     mavlink_message_t encoded_msg;
     memset(&encoded_msg, 0x00, sizeof(mavlink_message_t));
 
-    uint8_t encoderStatus = Mavlink_airside_encoder(msg_id, &encoded_msg, (const uint8_t*) &data_int);
+    int data_int = data.toInt();
+
+    switch(msg_id){
+        case MESSAGE_ID_NUM_WAYPOINTS:
+        case MESSAGE_ID_HOLDING_ALTITUDE:
+        case MESSAGE_ID_HOLDING_TURN_RADIUS:
+        case MESSAGE_ID_PATH_MODIFY_NEXT_LD:
+        case MESSAGE_ID_PATH_MODIFY_PREV_LD:
+        case MESSAGE_ID_PATH_MODIFY_LD:
+        {
+            four_bytes_int_cmd_t command = {data_int,};
+            uint8_t encoderStatus = Mavlink_airside_encoder(msg_id, &encoded_msg, (const uint8_t*) &command);
+            break;
+        }
+        case MESSAGE_ID_WAYPOINT_MODIFY_PATH_CMD:
+        case MESSAGE_ID_WAYPOINT_NEXT_DIRECTIONS_CMD:
+        case MESSAGE_ID_HOLDING_TURN_DIRECTION:
+        {
+            one_byte_uint_cmd_t command = {(uint8_t)data_int,};
+            uint8_t encoderStatus = Mavlink_airside_encoder(msg_id, &encoded_msg, (const uint8_t*) &command);
+            break;
+        }
+        case MESSAGE_ID_BEGIN_LANDING:
+        case MESSAGE_ID_BEGIN_TAKEOFF:
+        case MESSAGE_ID_INITIALIZING_HOMEBASE:
+        {
+            single_bool_cmd_t command = {(bool)data_int,};
+            uint8_t encoderStatus = Mavlink_airside_encoder(msg_id, &encoded_msg, (const uint8_t*) &command);
+            break;
+        }
+        default: break;
+    }
 
     serial->write(mavlinkToByteArray(encoded_msg));
 }
