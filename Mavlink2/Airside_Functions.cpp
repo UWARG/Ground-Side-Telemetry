@@ -481,14 +481,3 @@ int test__encode_then_decode(void)
     }
     return 0;
 }
-
-/*
-int main(void) // TODO: this main needs to be removed once integrated
-{
-    test__encode_then_decode();
-
-    return 0;
-}
-
-
-*/

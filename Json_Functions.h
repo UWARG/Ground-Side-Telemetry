@@ -2,6 +2,7 @@
 #define JSON_FUNCTIONS_H
 
 #include <QJsonValue>
+#include <QString>
 
 /* POGI data to write to the CV JSON file */
 
@@ -14,6 +15,6 @@ enum POGI_Data_IDs_e{
     IS_LANDED,
 };
 
-int write_to_POGI_JSON(QString type, QJsonValue pogi_data);
+int write_to_POGI_JSON(QString type, QJsonValue pogi_data, QString POGI_FILEPATH);
 
 #endif // JSON_FUNCTIONS_H

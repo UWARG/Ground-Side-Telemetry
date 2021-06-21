@@ -7,16 +7,10 @@
 #include <QDebug>
 #include <QApplication>
 
-/* absolute paths for pogi/pigo json files */
-#define POGI_FILEPATH "/Users/ksisjaya/Desktop/PilotManager/test_pogi.json"
-#define PIGO_FILEPATH "empty_for_now"
-
-
-
-int write_to_POGI_JSON(QString type, QJsonValue pogi_data)
+int write_to_POGI_JSON(QString type, QJsonValue pogi_data, QString POGI_FILEPATH)
 {
 
-    QFile file(QStringLiteral(POGI_FILEPATH));
+    QFile file(POGI_FILEPATH);
 
     if (!file.exists()) {   // make sure file exists
         qWarning() << "Write Error: " << POGI_FILEPATH << " doesn't exist";

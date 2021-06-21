@@ -19,9 +19,9 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     allowReading = false;
-    CVFilePath = "";
+    PIGOFilePath = "";
     watcher = new QFileSystemWatcher(this);
-    connect(watcher, SIGNAL(fileChanged(const QString &)), this, SLOT(fileChanged(const QString &)));
+    connect(watcher, SIGNAL(pigoFileChanged(const QString &)), this, SLOT(pigoFileChanged(const QString &)));
     serial = new serialclass("COM3", QSerialPort::Baud9600, QSerialPort::OneStop, QSerialPort::NoFlowControl, QSerialPort::Data8);
 
     /* init Rx UI to display all fields as 0 */
@@ -89,7 +89,7 @@ void MainWindow::updateWidget(char* decoded_message_buffer, POGI_Message_IDs_e m
             memcpy(&timestamp_decoded, &decoded_message_buffer, sizeof(POGI_Timestamp_t));
             ui->data_timestampOfMeasurements->setNum((int) timestamp_decoded.timeStamp);
 
-            write_to_POGI_JSON(QString("timestampOfMeasurements"), QJsonValue((int) timestamp_decoded.timeStamp));
+            write_to_POGI_JSON(QString("timestampOfMeasurements"), QJsonValue((int) timestamp_decoded.timeStamp), this->POGIFilePath);
         }
         break;
 
@@ -107,7 +107,7 @@ void MainWindow::updateWidget(char* decoded_message_buffer, POGI_Message_IDs_e m
                 {"altitude", (int) gps_decoded.altitude},
                 {"longitude", (int) gps_decoded.longitude}
             };
-            write_to_POGI_JSON(QString("gpsCoordinates"), QJsonValue(gps_coords));
+            write_to_POGI_JSON(QString("gpsCoordinates"), QJsonValue(gps_coords), this->POGIFilePath);
         }
         break;
 
@@ -125,7 +125,7 @@ void MainWindow::updateWidget(char* decoded_message_buffer, POGI_Message_IDs_e m
                 {"roll", (double) plane_euler_decoded.roll},
                 {"yaw", (double) plane_euler_decoded.yaw}
             };
-            write_to_POGI_JSON(QString("eulerAnglesOfPlane"), QJsonValue(plane_euler));
+            write_to_POGI_JSON(QString("eulerAnglesOfPlane"), QJsonValue(plane_euler), this->POGIFilePath);
         }
         break;
 
@@ -143,7 +143,7 @@ void MainWindow::updateWidget(char* decoded_message_buffer, POGI_Message_IDs_e m
                 {"roll", (double) camera_euler_decoded.roll},
                 {"yaw", (double) camera_euler_decoded.yaw}
             };
-            write_to_POGI_JSON(QString("eulerAnglesOfCamera"), QJsonValue(camera_euler));
+            write_to_POGI_JSON(QString("eulerAnglesOfCamera"), QJsonValue(camera_euler), this->POGIFilePath);
         }
         break;
 
@@ -160,7 +160,7 @@ void MainWindow::updateWidget(char* decoded_message_buffer, POGI_Message_IDs_e m
                 ui->data_isLanded->setText("False");
             }
 
-            write_to_POGI_JSON(QString("isLanded"), QJsonValue((bool) is_landed_decoded.cmd));
+            write_to_POGI_JSON(QString("isLanded"), QJsonValue((bool) is_landed_decoded.cmd), this->POGIFilePath);
         }
         break;
 
@@ -170,7 +170,7 @@ void MainWindow::updateWidget(char* decoded_message_buffer, POGI_Message_IDs_e m
             memcpy(&airspeed_decoded, &decoded_message_buffer, sizeof(four_bytes_float_cmd_t));
             ui->data_currentAirspeed->setNum((double) airspeed_decoded.cmd);
 
-            write_to_POGI_JSON(QString("currentAirspeed"), QJsonValue((double) airspeed_decoded.cmd));
+            write_to_POGI_JSON(QString("currentAirspeed"), QJsonValue((double) airspeed_decoded.cmd), this->POGIFilePath);
         }
         break;
 
@@ -328,7 +328,7 @@ void MainWindow::on_sendInfoButton_clicked()
 }
 
 
-void MainWindow::fileChanged(const QString & path)
+void MainWindow::pigoFileChanged(const QString & path)
 {
    if (allowReading){
        if (QFile::exists(path)) {
@@ -390,22 +390,28 @@ void MainWindow::on_readingButton_clicked()
         ui->readingButton->setText("Start Reading");
         allowReading = !allowReading;
     }
-    else if (CVFilePath != ""){
+    else if (PIGOFilePath != ""){
         ui->readingButton->setText("Stop Reading");
-        watcher->addPath(CVFilePath);
+        watcher->addPath(PIGOFilePath);
         allowReading = !allowReading;
     }
 
 }
 
-void MainWindow::on_browseButton_clicked()
+void MainWindow::on_pigoBrowseButton_clicked()
 {
-    CVFilePath = QFileDialog::getOpenFileName(this, "Open the CV File", "C:\\", "JSON File (*.json)");
-    watcher->addPath(CVFilePath);
-    QFile file(CVFilePath);
+    PIGOFilePath = QFileDialog::getOpenFileName(this, "Open the CV PIGO File", "C:\\", "JSON File (*.json)");
+    watcher->addPath(PIGOFilePath);
+    QFile file(PIGOFilePath);
     QFileInfo fileInfo(file.fileName());
     QString filename(fileInfo.fileName());
-    ui->fileNameEdit->setText(filename);
+    ui->pigoFileNameEdit->setText(filename);
+}
+
+void MainWindow::on_pogiBrowseButton_clicked()
+{
+    POGIFilePath = QFileDialog::getOpenFileName(this, "Open the CV POGI File", "C:\\", "JSON File (*.json)");
+    ui->pogiFileNameEdit->setText(POGIFilePath);
 }
 
 

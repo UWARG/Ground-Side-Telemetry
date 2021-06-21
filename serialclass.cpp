@@ -1,5 +1,4 @@
 #include "serialclass.h"
-#include "pilotmanager.h"
 #include <QtSerialPort/QSerialPort>
 
 
@@ -24,13 +23,15 @@ serialclass::serialclass(QString portname, int baudrate, QSerialPort::StopBits s
 void serialclass::handleSerialRead(){
 
     serial -> open(QIODevice::ReadWrite);
-    /*QByteArray byteArray = serial->readAll();
-    qDebug("Read " + byteArray);
 
-    serialdata.append(serial -> readAll());
+//    Deprecated: from when we thought we would get packet data all at once
+//    QByteArray byteArray = serial->readAll();
+//    qDebug("Read " + byteArray);
 
-    mavlink_message_t encoded_message;
-    memcpy (&encoded_message, serialdata.data(), serialdata.length());*/
+//    serialdata.append(serial -> readAll());
+
+//    mavlink_message_t encoded_message;
+//    memcpy (&encoded_message, serialdata.data(), serialdata.length());
 
     emit newSerialDataRead(serial->readAll());
 

@@ -18,9 +18,8 @@
 #include <QFileInfo>
 #include <QFileDialog>
 #include <QDir>
-
-
 #include <QObject>
+
 #include "Mavlink2/Mavlink2_lib/common/common.h"
 #include "Mavlink2/Groundside_Functions.hpp"
 #include "Mavlink2/Airside_Functions.hpp"
@@ -57,7 +56,8 @@ public:
     // Member Variables
     QFileSystemWatcher *watcher;
     serialclass *serial;
-    QString CVFilePath;
+    QString PIGOFilePath;
+    QString POGIFilePath;
     bool allowReading;
 
 signals:
@@ -71,9 +71,10 @@ private slots:
 
     void on_setWaypointNumberButton_clicked();
     void on_sendInfoButton_clicked();
-    void fileChanged(const QString & path);
+    void pigoFileChanged(const QString & path);
     void on_readingButton_clicked();
-    void on_browseButton_clicked();
+    void on_pigoBrowseButton_clicked();
+    void on_pogiBrowseButton_clicked();
 
 private:
     Ui::MainWindow *ui;
