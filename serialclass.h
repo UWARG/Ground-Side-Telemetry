@@ -18,7 +18,7 @@ private slots:
     //void handleError(QSerialPort::SerialPortError serialPortError);
 
 signals:
-    void newSerialDataRead(mavlink_message_t newSerialData);
+    void newSerialDataRead(QByteArray newSerialData);
 
 public:
     explicit serialclass(QString portname, int baudrate, QSerialPort::StopBits stopbits,

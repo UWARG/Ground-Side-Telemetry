@@ -18,10 +18,13 @@ int main(int argc, char *argv[])
 //    serial -> write(array);
 //    qDebug(serial -> serialdata);
 
-    /* connect serial signal to updatewidget slot */
+    /* connect serial signal to getNewSerialData slot */
     PilotManager *pilot_ui = new PilotManager;
     QObject::connect(serial, SIGNAL(newSerialDataRead(mavlink_message_t)),
-                     pilot_ui, SLOT(updateWidget(mavlink_message_t)));
+                     pilot_ui, SLOT(decodeNewSerialData(mavlink_message_t)));
+
+    QObject::connect(pilot_ui, SIGNAL(newDecodedData(char*,POGI_Message_IDs_e)),
+                     pilot_ui, SLOT(updateWidget(char*,POGI_Message_IDs_e)));
 
     qDebug() << "HELLOO";
     return a.exec();

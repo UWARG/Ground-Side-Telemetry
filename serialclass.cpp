@@ -24,15 +24,15 @@ serialclass::serialclass(QString portname, int baudrate, QSerialPort::StopBits s
 void serialclass::handleSerialRead(){
 
     serial -> open(QIODevice::ReadWrite);
-    QByteArray byteArray = serial->readAll();
+    /*QByteArray byteArray = serial->readAll();
     qDebug("Read " + byteArray);
 
     serialdata.append(serial -> readAll());
 
     mavlink_message_t encoded_message;
-    memcpy (&encoded_message, serialdata.data(), serialdata.length());
+    memcpy (&encoded_message, serialdata.data(), serialdata.length());*/
 
-    emit newSerialDataRead(encoded_message);
+    emit newSerialDataRead(serial->readAll());
 
 }
 

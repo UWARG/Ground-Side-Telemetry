@@ -24,8 +24,15 @@ private:
     Ui::PilotManager *ui;
     void writeToJSON(char* jsonIndex);
 
+    mavlink_decoding_status_t decoderStatus;
+    char decoded_message_buffer[50];
+
 public slots:
-    void updateWidget(mavlink_message_t encoded_msg);
+    void decodeNewSerialData(QByteArray new_serial_data);
+    void updateWidget(char* decoded_message, POGI_Message_IDs_e message_type);
+
+signals:
+    void newDecodedData(char* decoded_message, POGI_Message_IDs_e message_type);
 
 };
 #endif // PILOTMANAGER_H

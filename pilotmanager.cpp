@@ -19,6 +19,8 @@ PilotManager::PilotManager(QWidget *parent)
     , ui(new Ui::PilotManager)
 {
     ui->setupUi(this);
+
+    /* init UI to display all fields as 0 */
     ui->data_timestampOfMeasurements->setNum(0);
     ui->data_latitude->setNum(0);
     ui->data_altitude->setNum(0);
@@ -37,6 +39,12 @@ PilotManager::PilotManager(QWidget *parent)
     ui->data_currentWaypointID->setNum(0);
     ui->data_homebaseInitialized->setNum(0);
     ui->data_currentAirspeed->setNum(0);
+
+    /* init decoding fields */
+    this->decoderStatus = MAVLINK_DECODING_INCOMPLETE;
+
+    /* link up the serial data reading with the decoder */
+
 }
 
 PilotManager::~PilotManager()
@@ -44,28 +52,27 @@ PilotManager::~PilotManager()
     delete ui;
 }
 
-void PilotManager::updateWidget(mavlink_message_t encoded_msg)
-{
+void PilotManager::decodeNewSerialData(QByteArray new_serial_data) {
 
-    /* decode the data */
+    // decode the data only if data not fully decoded yet
+    if (this->decoderStatus != MAVLINK_DECODING_OKAY) {
 
-    mavlink_decoding_status_t decoderStatus = MAVLINK_DECODING_INCOMPLETE;
+        POGI_Message_IDs_e message_type = POGI_MESSAGE_ID_NONE;
 
-    char decoded_message_buffer[50]; //256 is the max payload length
+        // call decoder on the current byte (assumes serial port sends byte by byte)
+        decoderStatus = Mavlink_groundside_decoder(&message_type, new_serial_data.at(0), (uint8_t *) &(this->decoded_message_buffer));
 
-    // decoder gets one byte at a time from a serial port
-    unsigned char* ptr_in_byte = (unsigned char *) &encoded_msg;
-    POGI_Message_IDs_e message_type = POGI_MESSAGE_ID_NONE;
-
-    for( int i = 0; i < 50; i++) // 50 is just a random number larger than message length (for GPS message length is 39)
-    {
-        if (decoderStatus != MAVLINK_DECODING_OKAY)
-        {
-            printf("copying byte: %d  |  current byte : %hhx\n", i, ptr_in_byte[i]);
-            decoderStatus = Mavlink_groundside_decoder(&message_type, ptr_in_byte[i], (uint8_t*) &decoded_message_buffer);
+        // update the widget if read the last byte and decoding is OK
+        if (decoderStatus == MAVLINK_DECODING_OKAY) {
+            emit newDecodedData(this->decoded_message_buffer, message_type);  // signal to update the GUI
+            this->decoderStatus = MAVLINK_DECODING_INCOMPLETE;
         }
     }
+}
 
+
+void PilotManager::updateWidget(char* decoded_message_buffer, POGI_Message_IDs_e message_type)
+{
     /* output to the GUI */
 
     switch(message_type)
