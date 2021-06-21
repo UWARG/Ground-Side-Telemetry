@@ -13,22 +13,23 @@ CONFIG += console
 SOURCES += \
     Json_Functions.cpp \
     main.cpp \
-    pilotmanager.cpp \
     serialclass.cpp \
     Mavlink2/Airside_Functions.cpp \
-    Mavlink2/Groundside_Functions.cpp
+    Mavlink2/Groundside_Functions.cpp \
+    mainwindow.cpp
 
 HEADERS += \
     Json_Functions.h \
-    pilotmanager.h \
     serialclass.h \
     Mavlink2/Mavlink2_lib/common/common.h \
     Mavlink2/Airside_Functions.hpp \
     Mavlink2/Groundside_Functions.hpp \
-    Mavlink2/Encodings.hpp
+    Mavlink2/Encodings.hpp \
+    json.hpp \
+    mainwindow.h
 
 FORMS += \
-    pilotmanager.ui
+    mainwindow.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

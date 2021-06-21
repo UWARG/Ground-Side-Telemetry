@@ -12,6 +12,7 @@
 
 #include "Mavlink2_lib/common/mavlink.h"
 #include "Encodings.hpp"
+#include <iostream>
 
 //-------------------------- Prototypes ---------------------------------------------------------------
 
@@ -26,6 +27,27 @@
  * 
  */
 mavlink_decoding_status_t Mavlink_groundside_decoder(POGI_Message_IDs_e* type, uint8_t incomingByte, uint8_t *telemetryData);
+
+/**
+ * @brief Encode a selected struct
+ *
+ * @param type The type of telemetry data e.g. GPS or takeoff or landing...
+ * @param message The MAVLink message to compress the data into, this is guaranteed to be a full message starts from byte 0xfd
+ * @param struct_ptr C-struct to read the message contents from
+ *
+ * @return the status of encoding
+ *
+ * Example usage, give the address of the struct you want to encode
+ *     mavlink_global_position_int_t global_position =
+    {
+        ...
+    };
+
+    mavlink_message_t encoded_msg;
+
+    uint8_t encoderStatus = Mavlink_airside_encoder(MESSAGE_ID_GPS, &encoded_msg, (const uint8_t*) &global_position);
+ */
+mavlink_encoding_status_t Mavlink_groundside_encoder(PIGO_Message_IDs_e id, mavlink_message_t *message, const uint8_t *struct_ptr);
 
 #endif //GROUNDSIDE_FUNCTIONS_HPP
 

@@ -1,4 +1,5 @@
-#include "pilotmanager.h"
+#include "mainwindow.h"
+//#include "pilotmanager.h"
 #include "serialclass.h"
 
 #include <QApplication>
@@ -8,8 +9,10 @@
 
 int main(int argc, char *argv[])
 {
+
+
     QApplication a(argc, argv);
-    PilotManager w;
+    MainWindow w;
     w.show();
 
     serialclass * serial = new serialclass("COM3", QSerialPort::Baud9600, QSerialPort::OneStop, QSerialPort::NoFlowControl, QSerialPort::Data8);
@@ -19,7 +22,7 @@ int main(int argc, char *argv[])
 //    qDebug(serial -> serialdata);
 
     /* connect serial signal to getNewSerialData slot */
-    PilotManager *pilot_ui = new PilotManager;
+    MainWindow *pilot_ui = new MainWindow;
     QObject::connect(serial, SIGNAL(newSerialDataRead(mavlink_message_t)),
                      pilot_ui, SLOT(decodeNewSerialData(mavlink_message_t)));
 
