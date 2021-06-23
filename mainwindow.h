@@ -59,13 +59,15 @@ public:
     QString PIGOFilePath;
     QString POGIFilePath;
     bool allowReading;
+    unsigned int currentByteCount;
+    char decoded_message_buffer[50];
 
 signals:
     void newDecodedData(char* decoded_message, POGI_Message_IDs_e message_type);
 
 public slots:
     void decodeNewSerialData(QByteArray new_serial_data);
-    void updateWidget(char* decoded_message, POGI_Message_IDs_e message_type);
+    void updateWidget(QByteArray encoded_msg);
 
 private slots:
 
@@ -81,6 +83,6 @@ private:
 
     void writeToJSON(char* jsonIndex);
     mavlink_decoding_status_t decoderStatus;
-    char decoded_message_buffer[50];
+
 };
 #endif // MAINWINDOW_H
