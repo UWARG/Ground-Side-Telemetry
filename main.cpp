@@ -15,19 +15,22 @@ int main(int argc, char *argv[])
     MainWindow w;
     w.show();
 
-    serialclass * serial = new serialclass("COM3", QSerialPort::Baud9600, QSerialPort::OneStop, QSerialPort::NoFlowControl, QSerialPort::Data8);
+    //serialclass * serial = new serialclass("COM3", QSerialPort::Baud9600, QSerialPort::OneStop, QSerialPort::NoFlowControl, QSerialPort::Data8);
     QByteArray array;
     array[0] = 0x0a;
 //    serial -> write(array);
 //    qDebug(serial -> serialdata);
 
     /* connect serial signal to getNewSerialData slot */
-    MainWindow *pilot_ui = new MainWindow;
-    QObject::connect(serial, SIGNAL(newSerialDataRead(mavlink_message_t)),
-                     pilot_ui, SLOT(decodeNewSerialData(mavlink_message_t)));
+    //MainWindow *pilot_ui = new MainWindow;
+//    QObject::connect(serial, SIGNAL(newSerialDataRead(mavlink_message_t)),
+//                     w, SLOT(decodeNewSerialData(mavlink_message_t)));
 
-    QObject::connect(pilot_ui, SIGNAL(newDecodedData(char*,POGI_Message_IDs_e)),
-                     pilot_ui, SLOT(updateWidget(char*,POGI_Message_IDs_e)));
+//    qDebug() << "HELLO";
+//    serial->kevin_test();
+
+//    QObject::connect(w, SIGNAL(newDecodedData(char*,POGI_Message_IDs_e)),
+//                     w, SLOT(updateWidget(char*,POGI_Message_IDs_e)));
 
     qDebug() << "HELLOO";
     return a.exec();

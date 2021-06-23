@@ -21,8 +21,11 @@ MainWindow::MainWindow(QWidget *parent)
     allowReading = false;
     PIGOFilePath = "";
     watcher = new QFileSystemWatcher(this);
-    connect(watcher, SIGNAL(pigoFileChanged(const QString &)), this, SLOT(pigoFileChanged(const QString &)));
-    serial = new serialclass("COM3", QSerialPort::Baud9600, QSerialPort::OneStop, QSerialPort::NoFlowControl, QSerialPort::Data8);
+    //connect(watcher, SIGNAL(pigoFileChanged(const QString &)), this, SLOT(pigoFileChanged(const QString &)));
+    serial = new serialclass("/dev/ttyusb0", QSerialPort::Baud9600, QSerialPort::OneStop, QSerialPort::NoFlowControl, QSerialPort::Data8);
+
+    connect(serial, SIGNAL(newSerialDataRead(QByteArray)),
+                     this, SLOT(updateWidget(QByteArray)));
 
     /* init Rx UI to display all fields as 0 */
     ui->data_timestampOfMeasurements->setNum(0);
@@ -44,6 +47,11 @@ MainWindow::MainWindow(QWidget *parent)
     ui->data_homebaseInitialized->setNum(0);
     ui->data_currentAirspeed->setNum(0);
 
+
+    qDebug() << "HELLO";
+    serial->kevin_test();
+
+
     /* init decoding fields */
     this->decoderStatus = MAVLINK_DECODING_INCOMPLETE;
 
@@ -63,23 +71,66 @@ void MainWindow::decodeNewSerialData(QByteArray new_serial_data) {
     // decode the data only if data not fully decoded yet
     if (this->decoderStatus != MAVLINK_DECODING_OKAY) {
 
+        qDebug() << "IN DECODER";
+        qDebug() << "NEW SERIAL DATA AT 0: " << new_serial_data.at(0);
         POGI_Message_IDs_e message_type = POGI_MESSAGE_ID_NONE;
 
         // call decoder on the current byte (assumes serial port sends byte by byte)
         decoderStatus = Mavlink_groundside_decoder(&message_type, new_serial_data.at(0), (uint8_t *) &(this->decoded_message_buffer));
 
+        qDebug() << "DECODER STATUS: " << decoderStatus;
+        qDebug() << "MESSAGE TYPE: " << message_type;
+
+        POGI_Euler_Angle_t camera_euler_decoded;
+        memcpy(&camera_euler_decoded, &decoded_message_buffer, sizeof(POGI_Euler_Angle_t));
+
+        qDebug() << "EULER DECODED: " << camera_euler_decoded.pitch;
+        qDebug() << "EULER YAW: " << camera_euler_decoded.yaw;
+        qDebug() << "EULER ROLL: " << camera_euler_decoded.roll;
+
         // update the widget if read the last byte and decoding is OK
         if (decoderStatus == MAVLINK_DECODING_OKAY) {
-            emit newDecodedData(this->decoded_message_buffer, message_type);  // signal to update the GUI
+            //emit newDecodedData(this->decoded_message_buffer, message_type);  // signal to update the GUI
+            //this->updateWidget(message_type);
+
             this->decoderStatus = MAVLINK_DECODING_INCOMPLETE;
         }
     }
 }
 
 
-void MainWindow::updateWidget(char* decoded_message_buffer, POGI_Message_IDs_e message_type)
+void MainWindow::updateWidget(QByteArray encoded_msg)
 {
+
+    /* decode the data */
+
+    mavlink_decoding_status_t decoderStatus = MAVLINK_DECODING_INCOMPLETE;
+
+    char decoded_message_buffer[50]; //256 is the max payload length
+
+    // decoder gets one byte at a time from a serial port
+    unsigned char* ptr_in_byte = (unsigned char *) &encoded_msg;
+    POGI_Message_IDs_e message_type = POGI_MESSAGE_ID_NONE;
+
+    for( int i = 0; i < 50; i++) // 50 is just a random number larger than message length (for GPS message length is 39)
+    {
+        if (decoderStatus != MAVLINK_DECODING_OKAY)
+        {
+            printf("copying byte: %d  |  current byte : %hhx\n", i, encoded_msg.at(i));
+            decoderStatus = Mavlink_groundside_decoder(&message_type, encoded_msg.at(i), (uint8_t*) &decoded_message_buffer);
+        }
+    }
+
     /* output to the GUI */
+
+
+    POGI_Euler_Angle_t cam;
+    memcpy(&cam, &decoded_message_buffer, sizeof(POGI_Euler_Angle_t));
+
+    qDebug() << "EULER DECODED1: " << cam.pitch;
+    qDebug() << "EULER YAW1: " << cam.yaw;
+    qDebug() << "EULER ROLL1: " << cam.roll;
+    qDebug() << "MESSAGE TYPE1: " << message_type;
 
     switch(message_type)
     {
@@ -131,8 +182,14 @@ void MainWindow::updateWidget(char* decoded_message_buffer, POGI_Message_IDs_e m
 
         case MESSAGE_ID_EULER_ANGLE_CAM:    // data goes to CV
         {
+
+            qDebug() << "HEREEEEEEE";
             POGI_Euler_Angle_t camera_euler_decoded;
             memcpy(&camera_euler_decoded, &decoded_message_buffer, sizeof(POGI_Euler_Angle_t));
+            qDebug() << "PITCH3: " << camera_euler_decoded.pitch;
+
+            ui->data_cameraPitch->setNum(50000);
+
             ui->data_cameraPitch->setNum((double) camera_euler_decoded.pitch);
             ui->data_cameraRoll->setNum((double) camera_euler_decoded.roll);
             ui->data_cameraYaw->setNum((double) camera_euler_decoded.yaw);
