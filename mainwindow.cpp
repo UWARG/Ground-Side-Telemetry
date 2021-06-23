@@ -112,7 +112,7 @@ void MainWindow::updateWidget(QByteArray encoded_msg)
     unsigned char* ptr_in_byte = (unsigned char *) &encoded_msg;
     POGI_Message_IDs_e message_type = POGI_MESSAGE_ID_NONE;
 
-    for( int i = 0; i < 50; i++) // 50 is just a random number larger than message length (for GPS message length is 39)
+    for( int i = 0; i < encoded_msg.size(); i++) // 50 is just a random number larger than message length (for GPS message length is 39)
     {
         if (decoderStatus != MAVLINK_DECODING_OKAY)
         {
