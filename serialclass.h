@@ -27,10 +27,6 @@ public:
     void write(QByteArray data);
 
     QByteArray input_buffer;
-    int size_of_packet;
-
-    void kevin_test();
-    void furtherTest(QByteArray incoming_packet);
 
 };
 

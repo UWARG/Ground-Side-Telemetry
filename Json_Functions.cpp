@@ -7,17 +7,17 @@
 #include <QDebug>
 #include <QApplication>
 
-int write_to_POGI_JSON(QString type, QJsonValue pogi_data, QString POGI_FILEPATH)
+int write_to_POGI_JSON(QString type, QJsonValue pogi_data, QString POGI_FILEPATH="/INPUT/ABS/PATH/HERE")
 {
 
     QFile file(POGI_FILEPATH);
 
     if (!file.exists()) {   // make sure file exists
-        qWarning() << "Write Error: " << POGI_FILEPATH << " doesn't exist";
+        qWarning() << "JSON File Write Error: " << POGI_FILEPATH << " doesn't exist";
         return -1;
     }
     if (!file.open(QIODevice::ReadOnly)) {      // open file for reading
-        qWarning() << "Write Error: " << "couldn't open for reading " << POGI_FILEPATH;
+        qWarning() << "JSON File Write Error: " << "couldn't open for reading " << POGI_FILEPATH;
         return -1;
     }
 
@@ -37,7 +37,7 @@ int write_to_POGI_JSON(QString type, QJsonValue pogi_data, QString POGI_FILEPATH
     }
 
     if (!file.open(QIODevice::WriteOnly)) { // open file for writing
-        qWarning() << "Write Error: " << "couldn't open for writing " << POGI_FILEPATH;
+        qWarning() << "JSON File Write Error: " << "couldn't open for writing " << POGI_FILEPATH;
         return -1;
     }
 

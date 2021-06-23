@@ -19,6 +19,7 @@
 #include <QFileDialog>
 #include <QDir>
 #include <QObject>
+#include <QDir>
 
 #include "Mavlink2/Mavlink2_lib/common/common.h"
 #include "Mavlink2/Groundside_Functions.hpp"
@@ -66,7 +67,6 @@ signals:
     void newDecodedData(char* decoded_message, POGI_Message_IDs_e message_type);
 
 public slots:
-    void decodeNewSerialData(QByteArray new_serial_data);
     void updateWidget(QByteArray encoded_msg);
 
 private slots:
