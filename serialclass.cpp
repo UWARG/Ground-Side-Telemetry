@@ -47,7 +47,7 @@ void serialclass::write(QByteArray data){
     else {
         qDebug(QString::number(bytes).toStdString().c_str());
     }
-    serial -> close();
+    
 
 }
 
