@@ -1,6 +1,5 @@
 QT       += core gui
-QT += serialport
-
+QT       += serialport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -12,13 +11,22 @@ CONFIG += console
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    Json_Functions.cpp \
     main.cpp \
-    mainwindow.cpp \
-    serialclass.cpp
+    serialclass.cpp \
+    Mavlink2/Airside_Functions.cpp \
+    Mavlink2/Groundside_Functions.cpp \
+    mainwindow.cpp
 
 HEADERS += \
-    mainwindow.h \
-    serialclass.h
+    Json_Functions.h \
+    serialclass.h \
+    Mavlink2/Mavlink2_lib/common/common.h \
+    Mavlink2/Airside_Functions.hpp \
+    Mavlink2/Groundside_Functions.hpp \
+    Mavlink2/Encodings.hpp \
+    json.hpp \
+    mainwindow.h
 
 FORMS += \
     mainwindow.ui

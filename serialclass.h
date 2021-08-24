@@ -2,9 +2,12 @@
 #define SERIALCLASS_H
 #include <QtSerialPort/QSerialPort>
 #include <QTimer>
+#include "Mavlink2/Encodings.hpp"
 
 class serialclass : public QObject
 {
+    Q_OBJECT
+
 private:
     QSerialPort * serial;
     QTimer timer;
@@ -12,8 +15,10 @@ private:
 private slots:
     void handleSerialRead();
     void handleSerialWrite(qint64 bytes);
-    void handleError(QSerialPort::SerialPortError serialPortError);
+    //void handleError(QSerialPort::SerialPortError serialPortError);
 
+signals:
+    void newSerialDataRead(QByteArray newSerialData);
 
 public:
     explicit serialclass(QString portname, int baudrate, QSerialPort::StopBits stopbits,
@@ -21,7 +26,7 @@ public:
     QByteArray serialdata;
     void write(QByteArray data);
 
-
+    QByteArray input_buffer;
 
 };
 
