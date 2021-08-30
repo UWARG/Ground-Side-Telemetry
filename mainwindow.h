@@ -7,7 +7,7 @@
 #include <QFormLayout>
 #include <QSpacerItem>
 #include <QSizePolicy>
-#import <QDebug>
+#include <QDebug>
 #include <QComboBox>
 #include <iostream>
 #include <QFileSystemWatcher>

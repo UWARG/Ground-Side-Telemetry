@@ -23,7 +23,7 @@ MainWindow::MainWindow(QWidget *parent)
     POGIFilePath = "";
     watcher = new QFileSystemWatcher(this);
     connect(watcher, SIGNAL(pigoFileChanged(const QString &)), this, SLOT(pigoFileChanged(const QString &)));
-    serial = new serialclass("/dev/ttyusb0", QSerialPort::Baud9600, QSerialPort::OneStop, QSerialPort::NoFlowControl, QSerialPort::Data8);
+    serial = new serialclass("COM5", QSerialPort::Baud9600, QSerialPort::OneStop, QSerialPort::NoFlowControl, QSerialPort::Data8);
 
     connect(serial, SIGNAL(newSerialDataRead(QByteArray)), this, SLOT(updateWidget(QByteArray)));
 
