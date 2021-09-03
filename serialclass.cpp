@@ -4,6 +4,9 @@
 
 serialclass::serialclass(QString portname, int baudrate, QSerialPort::StopBits stopbits,
                          QSerialPort::FlowControl flowcontrol, QSerialPort::DataBits databits)
+
+
+
 {
     serial = new QSerialPort(this);
 
@@ -16,6 +19,13 @@ serialclass::serialclass(QString portname, int baudrate, QSerialPort::StopBits s
     serial -> setFlowControl(flowcontrol);
     serial -> setDataBits(databits);
     serial -> open(QIODevice::ReadWrite);
+
+}
+
+serialclass::~serialclass() {
+    serial -> close(); // close the serial port
+    delete serial;
+    serial = nullptr; //deallocate the pointer
 
 }
 
@@ -68,6 +78,7 @@ void serialclass::handleSerialWrite(qint64 bytes) {
     //confirm that a message was sent
     qDebug("Message was Sent");
 }
+
 
 
 

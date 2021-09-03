@@ -50,6 +50,8 @@ MainWindow::MainWindow(QWidget *parent)
     /* init decoding fields */
     this->decoderStatus = MAVLINK_DECODING_INCOMPLETE;
 
+
+
 }
 
 MainWindow::~MainWindow()
@@ -263,6 +265,8 @@ void MainWindow::on_setWaypointNumberButton_clicked()
 void MainWindow::on_sendInfoButton_clicked()
 {
     QString waypointModifyFlightPathCommand = enumSelection(ui->waypointModifyFlightPathCommandBox);
+    ui->waypointModifyFlightPathCommandBox->itemData(0);
+    QDebug(ui->waypointModifyFlightPathCommandBox)
     convertMessage(waypointModifyFlightPathCommand, MESSAGE_ID_WAYPOINT_MODIFY_PATH_CMD);
 
     QString waypointNextDirectionCommand = ui->waypointNextDirectionsCommandBox->currentText();

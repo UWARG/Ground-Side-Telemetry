@@ -36,6 +36,8 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
+    friend class modify_flight_path_command_tests;
+
 public:
     // Constructor and Destructor
     MainWindow(QWidget *parent = nullptr);
