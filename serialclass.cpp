@@ -8,17 +8,17 @@ serialclass::serialclass(QString portname, int baudrate, QSerialPort::StopBits s
 
 
 {
-    serial = new QSerialPort(this);
+    serial = new QSerialPort(this); //create a pointer of the serial port in the initialization
 
-    QIODevice::connect(serial, &QSerialPort::readyRead, this, &serialclass::handleSerialRead);
-    QIODevice::connect(serial, &QSerialPort::bytesWritten, this, &serialclass::handleSerialWrite);
+    QIODevice::connect(serial, &QSerialPort::readyRead, this, &serialclass::handleSerialRead); //connect the port with a signal/slot for reading
+    QIODevice::connect(serial, &QSerialPort::bytesWritten, this, &serialclass::handleSerialWrite); //connect the port with a signal/slot for writing
 
     serial -> setBaudRate(baudrate);
     serial -> setPortName(portname);
     serial -> setStopBits(stopbits);
     serial -> setFlowControl(flowcontrol);
-    serial -> setDataBits(databits);
-    serial -> open(QIODevice::ReadWrite);
+    serial -> setDataBits(databits);//set the serial pointer with all the properties passed to it
+    serial -> open(QIODevice::ReadWrite); //open the serial port for reading and writing
 
 }
 
@@ -29,11 +29,13 @@ serialclass::~serialclass() {
 
 }
 
+
+
 void serialclass::handleSerialRead(){
 
-    serial->open(QIODevice::ReadWrite);
+    //this function triggers whenever incoming data is found on the serial port
 
-    QByteArray incoming_packet = serial->readAll();
+    QByteArray incoming_packet = serial->readAll(); //all avaiable bits incoming on the serial port are put onto a byte array
 
     this->input_buffer.append(incoming_packet);
 

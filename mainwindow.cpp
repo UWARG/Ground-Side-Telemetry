@@ -266,7 +266,7 @@ void MainWindow::on_sendInfoButton_clicked()
 {
     QString waypointModifyFlightPathCommand = enumSelection(ui->waypointModifyFlightPathCommandBox);
     ui->waypointModifyFlightPathCommandBox->itemData(0);
-    QDebug(ui->waypointModifyFlightPathCommandBox)
+
     convertMessage(waypointModifyFlightPathCommand, MESSAGE_ID_WAYPOINT_MODIFY_PATH_CMD);
 
     QString waypointNextDirectionCommand = ui->waypointNextDirectionsCommandBox->currentText();
