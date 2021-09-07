@@ -45,12 +45,23 @@ class MainWindow : public QMainWindow
      * Ui::MainWindow *ui
      *      A Pointer that refrences the ui.
      *
-     * mavlink_decoding_status_t
+     * mavlink_decoding_status_t decoderStatus
      *      Gives a status for the decoding of mavlink encoded serial data. Returns either 'MAVLINK_DECODING_INCOMPLETE' or 'MAVLINK_DECODING_OKAY'
      *
      * QFileSystemWatcher *watcher
-     *      A pointer to
+     *      A pointer that monitors if a file is being read to prevent read/write problems caused by other programs writing the file at the same time
      *
+     * serialclass *serial
+     *      A pointer to the serialclass class defined in serialclass.h
+     *
+     * QString PIGOFilePath
+     *      The string of the path of the PIGO file
+     *
+     * QString POGIFilePath
+     *      The string of the path of the POGI file
+     *
+     * bool allowReading
+     *      Determines if the program is allowed to read
      *
      * Methods
      * ---------
@@ -60,23 +71,50 @@ class MainWindow : public QMainWindow
      * ~MainWindow (destructor)
      *      The destructor deletes the ui pointer
      *
+     * void addWaypoint
+     *      Adds a new waypoint into the gui
+     *
+     * void remove
+     *      A helper function that removes whatever index is clicked on
+     *
+     * QString enumSelection
+     *      A helper function that returns the string of the current combobox value
+     *
+     * QByteArray mavlinkToByteArray
+     *      A helper function that converts an encoded mavlink message into a byte array
+     *
+     * uint32_t toInt32
+     *      A helper function that converts a number from a float to an 32 bit unsigned int
+     *
+     * void writeToJSON
+     *
      *
      *
      * Slots
      * ---------
      *
-     * handleSerialRead
-     *      A function that will be called whenever the serial port has incoming data. The process of reading data causes the port to emit a signal and call this function.
-     *      The resultant data is stored in a byte array
+     * void on_setWaypointNumberButton_clicked
+     *      A function that will be called whenever the set waypoint number button is clicked
      *
-     * handleSerialWrite
+     * void on_sendInfoButton_clicked
+     *      A function that will be called whenever the send info button is clicked
+     *
+     * void handleSerialWrite
      *      A function that will be called whenever the serial port will send over data. The port will emit a signal and call this function.
      *
+     * void on_readingButton_clicked
+     *      A function that will be called whenever the reading button is clicked
+     *
+     * void on_pigoBrowseButton_clicked
+     *      A function that will be called whenever the pigo browse button is clicked
+     *
+     * void on_pogiBrowseButton_clicked
+     *      A function that will be called whenever the pogi browse button is clicked
      *
      * Signal
      * -------
-     * newSerialDataRead
-     *      A signal that will be emitted whenever all the data in a message has been sent over.
+     * newDecodedData
+     *      A signal that will be emitted whenever
      *
      */
 
@@ -108,7 +146,6 @@ public:
     QString PIGOFilePath;
     QString POGIFilePath;
     bool allowReading;
-    unsigned int currentByteCount;
     char decoded_message_buffer[50];
 
 signals:
@@ -128,8 +165,6 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-
-    void writeToJSON(char* jsonIndex);
     mavlink_decoding_status_t decoderStatus;
 
 };

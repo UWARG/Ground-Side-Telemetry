@@ -31,11 +31,11 @@ class serialclass : public QObject
      * Slots
      * ---------
      *
-     * handleSerialRead
+     * void handleSerialRead
      *      A function that will be called whenever the serial port has incoming data. The process of reading data causes the port to emit a signal and call this function.
      *      The resultant data is stored in a byte array
      *
-     * handleSerialWrite
+     * void handleSerialWrite
      *      A function that will be called whenever the serial port will send over data. The port will emit a signal and call this function.
      *
      *
