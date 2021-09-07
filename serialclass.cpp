@@ -37,35 +37,36 @@ void serialclass::handleSerialRead(){
 
     QByteArray incoming_packet = serial->readAll(); //all avaiable bits incoming on the serial port are put onto a byte array
 
-    this->input_buffer.append(incoming_packet);
+    this->input_buffer.append(incoming_packet); //the new packet is added to the total data called the input_buffer
 
     qDebug() << "CURRENT INPUT BUFFER: " << this->input_buffer.toHex();
 
-    QList<QByteArray> partial_packets = this->input_buffer.split('\xfd');
+    QList<QByteArray> partial_packets = this->input_buffer.split('\xfd');   //removes the 'xfd' from the current message and splits it into two seperate messages
 
-    for (int i = 1; i < partial_packets.size(); i++) {
-        partial_packets[i].push_front('\xfd');
-        if (i < partial_packets.size() - 1) {
-            const QByteArray complete_packet = partial_packets.at(i);
-            emit newSerialDataRead(complete_packet);
-            this->input_buffer.remove(0, partial_packets.at(i).size());
+    for (int i = 1; i < partial_packets.size(); i++) {                      //for each element not at the end of an array
+        partial_packets[i].push_front('\xfd');                              //adds the fd back at the start of each message but maintains the split between them
+        if (i < partial_packets.size() - 1) {                               //for each packet not at the end of the partial packets list (since you cannot verify the last message as it needs an fd in the next message to verify its a message)
+            const QByteArray complete_packet = partial_packets.at(i);       //the packet is called a complete_packet and calls the newSerialDataRead slot, reading the
+            emit newSerialDataRead(complete_packet);                        //emits that a new message has been read sending it to the update_Widget function in the mainwindow
+            this->input_buffer.remove(0, partial_packets.at(i).size());     //removes the message from the buffer
         }
-        else {
-            int packet_size = this->input_buffer[1] + 12;
-            if (packet_size == this->input_buffer.size()) {
+        else {                                                              //if theres only 1 packet in the buffer
+            int packet_size = this->input_buffer[1] + 12;                   //the 2nd byte of all mavlink2 messages is the length of the message along with 12 bits of metadata
+
+            if (packet_size == this->input_buffer.size()) {                 //if the metadata + the length of the actual message is equal to the total message itself it is also a full msg
                 const QByteArray complete_packet = this->input_buffer;
                 emit newSerialDataRead(complete_packet);
-                this->input_buffer.remove(0, packet_size);
+                this->input_buffer.remove(0, packet_size);                  //thus it gets sent
             }
         }
     }
 
 }
 
-void serialclass::write(QByteArray data){
+void serialclass::write(QByteArray data){                                   //Called whenever needed to write serial data
 
-    serial -> open(QIODevice::ReadWrite);
-    qint64 bytes = serial -> write(data);
+
+    qint64 bytes = serial -> write(data);                                   //writes onto the serial port
     if(bytes == -1) {
         qDebug("There was an error");
     }
@@ -78,7 +79,7 @@ void serialclass::write(QByteArray data){
 
 void serialclass::handleSerialWrite(qint64 bytes) {
     //confirm that a message was sent
-    qDebug("Message was Sent");
+    qDebug("Message was Sent");  //This will be debugged everytime a message is sent onto a serial port
 }
 
 
