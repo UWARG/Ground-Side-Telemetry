@@ -61,6 +61,12 @@ MainWindow::~MainWindow()
 // SLOTS
 ///////////////////////////////////////////////////////////
 
+/**
+ * @brief Slot to update the GUI with data received from the plane; for CV data, it also outputs to the POGI file
+ *
+ * @param encoded_msg The complete message as parsed by the handleSerialRead signal
+ *
+ */
 void MainWindow::updateWidget(QByteArray encoded_msg)
 {
 
@@ -443,6 +449,14 @@ void MainWindow::addWaypoint(int num, QFormLayout *layout, int maxNum)
         layout->addItem(new QSpacerItem(0, 25, QSizePolicy::Fixed));
     }
 }
+
+/**
+ * @brief Encoder to convert the message into bytes and send serially via the serialclass
+ *
+ * @param data Data to be encoded and sent to the plane
+ * @param msg_id Identifier for what type of data is to be sent
+ *
+ */
 
 void MainWindow::convertMessage(QString data, PIGO_Message_IDs_e msg_id){
     if (data == ""){
