@@ -127,18 +127,22 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-    // Main Functions:
+    // Helper to add a waypoint to the GUI
     void addWaypoint(int num, QFormLayout* layout, int maxNum);
+
+    // Helper that calls the encoder to sends the data to the plane
     void convertMessage(QString data, PIGO_Message_IDs_e msg_id);
     void convertMessage(QList<QString> data, PIGO_Message_IDs_e msg_id);
 
-
-    // Helper Functions
+    // Helper to remove layout items
     void remove(QLayout* layout);
+
+    // Helper to select waypoint layout
     QString enumSelection(QComboBox* field);
+
+    // Helper to convert mavlink data to a byte array
     QByteArray mavlinkToByteArray(mavlink_message_t mav_message);
     uint32_t toInt32(float);
-
 
     // Member Variables
     QFileSystemWatcher *watcher;
@@ -152,8 +156,11 @@ signals:
     void newDecodedData(char* decoded_message, POGI_Message_IDs_e message_type);
 
 public slots:
+
+    // Slot to decode the received data from the plane and to update the GUI with the decoded data
     void updateWidget(QByteArray encoded_msg);
 
+// Helper slots to handle events from the GUI
 private slots:
 
     void on_setWaypointNumberButton_clicked();
@@ -164,7 +171,15 @@ private slots:
     void on_pogiBrowseButton_clicked();
 
 private:
+
+    // GUI object
     Ui::MainWindow *ui;
+
+
+    // Helper to write data to a JSON file
+    void writeToJSON(char* jsonIndex);
+
+
     mavlink_decoding_status_t decoderStatus;
 
 };
