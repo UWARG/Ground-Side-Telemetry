@@ -23,7 +23,7 @@ MainWindow::MainWindow(QWidget *parent)
     POGIFilePath = "";
     watcher = new QFileSystemWatcher(this);
     connect(watcher, SIGNAL(pigoFileChanged(const QString &)), this, SLOT(pigoFileChanged(const QString &)));
-    serial = new serialclass("/dev/ttyusb0", QSerialPort::Baud9600, QSerialPort::OneStop, QSerialPort::NoFlowControl, QSerialPort::Data8);
+    serial = new serialclass("COM5", QSerialPort::Baud9600, QSerialPort::OneStop, QSerialPort::NoFlowControl, QSerialPort::Data8);
 
     connect(serial, SIGNAL(newSerialDataRead(QByteArray)), this, SLOT(updateWidget(QByteArray)));
 
@@ -49,6 +49,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     /* init decoding fields */
     this->decoderStatus = MAVLINK_DECODING_INCOMPLETE;
+
+
 
 }
 
@@ -269,6 +271,8 @@ void MainWindow::on_setWaypointNumberButton_clicked()
 void MainWindow::on_sendInfoButton_clicked()
 {
     QString waypointModifyFlightPathCommand = enumSelection(ui->waypointModifyFlightPathCommandBox);
+    ui->waypointModifyFlightPathCommandBox->itemData(0);
+
     convertMessage(waypointModifyFlightPathCommand, MESSAGE_ID_WAYPOINT_MODIFY_PATH_CMD);
 
     QString waypointNextDirectionCommand = ui->waypointNextDirectionsCommandBox->currentText();
