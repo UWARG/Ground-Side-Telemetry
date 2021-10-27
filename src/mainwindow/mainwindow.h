@@ -12,8 +12,6 @@
 #include <iostream>
 #include <QFileSystemWatcher>
 #include <QFile>
-#include <json.hpp>
-#include <serialclass.h>
 #include <QPushButton>
 #include <QFileInfo>
 #include <QFileDialog>
@@ -21,9 +19,12 @@
 #include <QObject>
 #include <QDir>
 
+#include "serial/serial.h"
+
 #include "Mavlink2/Mavlink2_lib/common/common.h"
 #include "Mavlink2/Groundside_Functions.hpp"
 #include "Mavlink2/Airside_Functions.hpp"
+#include <json.hpp>
 
 
 using json = nlohmann::json;
@@ -146,7 +147,7 @@ public:
 
     // Member Variables
     QFileSystemWatcher *watcher;
-    serialclass *serial;
+    Serial *serial;
     QString PIGOFilePath;
     QString POGIFilePath;
     bool allowReading;

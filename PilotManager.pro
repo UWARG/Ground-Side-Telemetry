@@ -11,25 +11,32 @@ CONFIG += console
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    Json_Functions.cpp \
-    main.cpp \
-    serialclass.cpp \
-    Mavlink2/Airside_Functions.cpp \
-    Mavlink2/Groundside_Functions.cpp \
-    mainwindow.cpp
+    external/Mavlink2/Airside_Functions.cpp \
+    external/Mavlink2/Groundside_Functions.cpp \
+    src/json_functions/Json_Functions.cpp \
+    src/mainwindow/mainwindow.cpp \
+    src/serial/serial.cpp \
+    src/main.cpp \
+
 
 HEADERS += \
-    Json_Functions.h \
-    serialclass.h \
-    Mavlink2/Mavlink2_lib/common/common.h \
-    Mavlink2/Airside_Functions.hpp \
-    Mavlink2/Groundside_Functions.hpp \
-    Mavlink2/Encodings.hpp \
-    json.hpp \
-    mainwindow.h
+    external/Mavlink2/Mavlink2_lib/common/common.h \
+    external/Mavlink2/Airside_Functions.hpp \
+    external/Mavlink2/Groundside_Functions.hpp \
+    external/Mavlink2/Encodings.hpp \
+    external/json.hpp \
+    src/json_functions/Json_Functions.h \
+    src/mainwindow/mainwindow.h \
+    src/serial/serial.h \
+    src/json.hpp \
 
 FORMS += \
-    mainwindow.ui
+    src/mainwindow/mainwindow.ui
+
+
+INCLUDEPATH += \
+    src/ \
+    external/
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-#include "Json_Functions.h"
+#include "json_functions/Json_Functions.h"
 
 #include "Mavlink2/Encodings.hpp"
 #include "Mavlink2/Groundside_Functions.hpp"
@@ -23,7 +23,7 @@ MainWindow::MainWindow(QWidget *parent)
     POGIFilePath = "";
     watcher = new QFileSystemWatcher(this);
     connect(watcher, SIGNAL(pigoFileChanged(const QString &)), this, SLOT(pigoFileChanged(const QString &)));
-    serial = new serialclass("COM5", QSerialPort::Baud9600, QSerialPort::OneStop, QSerialPort::NoFlowControl, QSerialPort::Data8);
+    serial = new Serial("COM5", QSerialPort::Baud9600, QSerialPort::OneStop, QSerialPort::NoFlowControl, QSerialPort::Data8);
 
     connect(serial, SIGNAL(newSerialDataRead(QByteArray)), this, SLOT(updateWidget(QByteArray)));
 
