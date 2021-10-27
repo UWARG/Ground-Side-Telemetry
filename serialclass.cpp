@@ -1,4 +1,4 @@
-g#include "serialclass.h"
+#include "serialclass.h"
 #include <QtSerialPort/QSerialPort>
 #include <QDebug>
 
