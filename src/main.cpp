@@ -1,6 +1,6 @@
-#include "mainwindow.h"
+#include "mainwindow/mainwindow.h"
 //#include "pilotmanager.h"
-#include "serialclass.h"
+#include "serial/serial.h"
 
 #include <QApplication>
 #include <QtSerialPort/QSerialPortInfo>

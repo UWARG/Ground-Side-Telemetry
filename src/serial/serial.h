@@ -1,10 +1,10 @@
-#ifndef SERIALCLASS_H
-#define SERIALCLASS_H
+#ifndef SERIAL_H
+#define SERIAL_H
 #include <QtSerialPort/QSerialPort>
 #include <QTimer>
 #include "Mavlink2/Encodings.hpp"
 
-class serialclass : public QObject
+class Serial : public QObject
 {
 
     /*
@@ -49,13 +49,13 @@ class serialclass : public QObject
     Q_OBJECT
 
 public:
-    explicit serialclass(QString portname, int baudrate, QSerialPort::StopBits stopbits,
+    explicit Serial(QString portname, int baudrate, QSerialPort::StopBits stopbits,
                          QSerialPort::FlowControl flowcontrol, QSerialPort::DataBits databits);
 
     void write(QByteArray data);
 
     QByteArray input_buffer;
-    ~serialclass();
+    ~Serial();
 
 private:
     QSerialPort * serial;
@@ -71,4 +71,4 @@ signals:
 
 };
 
-#endif // SERIALCLASS_H
+#endif // SERIAL_H

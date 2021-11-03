@@ -1,8 +1,8 @@
-g#include "serialclass.h"
+#include "serial.h"
 #include <QtSerialPort/QSerialPort>
 #include <QDebug>
 
-serialclass::serialclass(QString portname, int baudrate, QSerialPort::StopBits stopbits,
+Serial::Serial(QString portname, int baudrate, QSerialPort::StopBits stopbits,
                          QSerialPort::FlowControl flowcontrol, QSerialPort::DataBits databits)
 
 
@@ -10,8 +10,8 @@ serialclass::serialclass(QString portname, int baudrate, QSerialPort::StopBits s
 {
     serial = new QSerialPort(this); //create a pointer of the serial port in the initialization
 
-    QIODevice::connect(serial, &QSerialPort::readyRead, this, &serialclass::handleSerialRead); //connect the port with a signal/slot for reading
-    QIODevice::connect(serial, &QSerialPort::bytesWritten, this, &serialclass::handleSerialWrite); //connect the port with a signal/slot for writing
+    QIODevice::connect(serial, &QSerialPort::readyRead, this, &Serial::handleSerialRead); //connect the port with a signal/slot for reading
+    QIODevice::connect(serial, &QSerialPort::bytesWritten, this, &Serial::handleSerialWrite); //connect the port with a signal/slot for writing
 
     serial -> setBaudRate(baudrate);
     serial -> setPortName(portname);
@@ -22,7 +22,7 @@ serialclass::serialclass(QString portname, int baudrate, QSerialPort::StopBits s
 
 }
 
-serialclass::~serialclass() {
+Serial::~Serial() {
     serial -> close(); // close the serial port
     delete serial;
     serial = nullptr; //deallocate the pointer
@@ -31,7 +31,7 @@ serialclass::~serialclass() {
 
 
 
-void serialclass::handleSerialRead(){
+void Serial::handleSerialRead(){
 
     //this function triggers whenever incoming data is found on the serial port
 
@@ -63,7 +63,7 @@ void serialclass::handleSerialRead(){
 
 }
 
-void serialclass::write(QByteArray data){                                   //Called whenever needed to write serial data
+void Serial::write(QByteArray data){                                   //Called whenever needed to write serial data
 
 
     qint64 bytes = serial -> write(data);                                   //writes onto the serial port
@@ -77,7 +77,7 @@ void serialclass::write(QByteArray data){                                   //Ca
 
 }
 
-void serialclass::handleSerialWrite(qint64 bytes) {
+void Serial::handleSerialWrite(qint64 bytes) {
     //confirm that a message was sent
     qDebug("Message was Sent");  //This will be debugged everytime a message is sent onto a serial port
 }
