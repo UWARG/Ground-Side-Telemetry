@@ -171,6 +171,12 @@ private slots:
     void on_pigoBrowseButton_clicked();
     void on_pogiBrowseButton_clicked();
 
+    void on_homeBaseWaypointTypeBox_activated(int index);
+
+    void on_pushButton_2_clicked();
+
+    void on_pushButton_2_released();
+
 private:
 
     // GUI object

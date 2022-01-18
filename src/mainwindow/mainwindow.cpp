@@ -3,8 +3,8 @@
 
 #include "json_functions/Json_Functions.h"
 
-#include "Mavlink2/Encodings.hpp"
-#include "Mavlink2/Groundside_Functions.hpp"
+//#include "Mavlink2/Encodings.hpp"
+//#include "Mavlink2/Groundside_Functions.hpp"
 
 #include <QFile>
 #include <QJsonParseError>
@@ -48,7 +48,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->data_currentAirspeed->setNum(0);
 
     /* init decoding fields */
-    this->decoderStatus = MAVLINK_DECODING_INCOMPLETE;
+    this->decoderStatus = DECODING_INCOMPLETE;
 
 
 
@@ -69,38 +69,82 @@ MainWindow::~MainWindow()
  * @param encoded_msg The complete message as parsed by the handleSerialRead signal
  *
  */
-void MainWindow::updateWidget(QByteArray encoded_msg)
+void MainWindow::updateWidget(QByteArray encoded_msg) // Slot to decode the received data from the plane and to update the GUI with the decoded data
+                                                      // [0] 0 -> 8 of these represent a character
+                                                      // [1] 1
+                                                      // [2] 0
+                                                      // [3] 0
+                                                      // we want to decode into words
+                                                      // Something;Something;Something;Something;Something -> will be a string
 {
 
     /* decode the data */
 
-    mavlink_decoding_status_t decoderStatus = MAVLINK_DECODING_INCOMPLETE;
+    //mavlink_decoding_status_t decoderStatus = MAVLINK_DECODING_INCOMPLETE;
+    mavlink_decoding_status_t decoderStatus = DECODING_INCOMPLETE; // should decoderStatus be a string or an object? Change in Encodings.hpp?
 
-    char decoded_message_buffer[50]; //256 is the max payload length
+    //const int BYTE_SIZE = 8;
+
+    //int size = encoded_msg.size() / byte_size;
+
+    //char decoded_message_buffer[50]; //256 is the max payload length
+    QByteArray decoded_message_buffer[8][8]; // use pointer for array size  ==================================RESEARCH HERE, 2d array necessary?
 
     // decoder gets one byte at a time from a serial port
     POGI_Message_IDs_e message_type = POGI_MESSAGE_ID_NONE;
 
-    for( int i = 0; i < encoded_msg.size(); i++) // 50 is just a random number larger than message length (for GPS message length is 39)
-    {
-        if (decoderStatus != MAVLINK_DECODING_OKAY)
-        {
-            printf("copying byte: %d  |  current byte : %hhx\n", i, encoded_msg.at(i));
-            decoderStatus = Mavlink_groundside_decoder(&message_type, encoded_msg.at(i), (uint8_t*) &decoded_message_buffer);
-        }
-    }
+     for( int i = 0; i < encoded_msg.size(); i++) // 50 is just a random number larger than message length (for GPS message length is 39)
+     {
+         if (decoderStatus != DECODING_OKAY)
+         {
+             printf("copying byte: %d  |  current byte : %hhx\n", i, encoded_msg.at(i));
+             decoderStatus = Mavlink_groundside_decoder(&message_type, encoded_msg.at(i), (uint8_t*) &decoded_message_buffer);
+         }   // telemetry data should be stored into decoded_message_buffer I think
+     }
+
+    int count = 0;
+
+    QList<float> x;
+    x.append(4.6);
+    x.append(4.8);
+
+//    QByteArray byte_storage[BYTE_SIZE];
+
+//    for (int i = 0; i < encoded_msg.size() / BYTE_SIZE; i++)
+//    {
+//        for (int j = 0; j < BYTE_SIZE; j++)
+//        {
+//            byte_storage[j] += encoded_msg[count]; // is accumulating correct here (using +=)?
+//            // USE MEMCPY for byte_storage
+//            count++;
+//        }
+        // call function here, 8 bits have been stored into byte_storage
+        // function previously named Mavlink_groundside_decoder in Groundside_Functions.cpp
+        // function identifies / updates message type, decodes and returns if successful
+//        decoderStatus = groundside_decoder(&message_type, (uint8_t*) &byte_storage, (uint8_t*) &decoded_message_buffer);
+        // 1) message type, 2) temp arrray of size 8, 3) 2D array of bytes needs to be updated
+        // groundside_decoder changes bytes to int or float. store all as float and cast to int later?
+//    }
+    // need to call a function that tells us the message type and slices message sections of 8
+    // declare a new array, then call the function with both arrays.
+    // the logic is coded in WARG_TESTING c++ file
+
+    // how do we categorize each type of message? How do we know what type the message is?
+    // what are the tells?
 
     /* output to the GUI */
 
-    switch(message_type)
+    switch(message_type) // c++ does not support strings as a type, message_type is Message_IDs_e
     {
         case MESSAGE_ID_TIMESTAMP:  // data goes to CV
         {
             POGI_Timestamp_t timestamp_decoded;
             memcpy(&timestamp_decoded, &decoded_message_buffer, sizeof(POGI_Timestamp_t));
             ui->data_timestampOfMeasurements->setNum((int) timestamp_decoded.timeStamp);
+            //ui points to main window -> box -> value
+            //value is set into "box"
 
-            write_to_POGI_JSON(QString("timestampOfMeasurements"), QJsonValue((int) timestamp_decoded.timeStamp), this->POGIFilePath);
+            //write_to_POGI_JSON(QString("timestampOfMeasurements"), QJsonValue((int) timestamp_decoded.timeStamp), this->POGIFilePath);
         }
         break;
 
@@ -112,13 +156,13 @@ void MainWindow::updateWidget(QByteArray encoded_msg)
             ui->data_altitude->setNum((int) gps_decoded.altitude);
             ui->data_longitude->setNum((int) gps_decoded.longitude);
 
-            QJsonObject gps_coords
+            QJsonObject gps_coords // The QJsonObject class encapsulates a JSON object, what does this really do?
             {
                 {"latitude", (int) gps_decoded.latitude},
                 {"altitude", (int) gps_decoded.altitude},
                 {"longitude", (int) gps_decoded.longitude}
             };
-            write_to_POGI_JSON(QString("gpsCoordinates"), QJsonValue(gps_coords), this->POGIFilePath);
+            //write_to_POGI_JSON(QString("gpsCoordinates"), QJsonValue(gps_coords), this->POGIFilePath);
         }
         break;
 
@@ -136,7 +180,7 @@ void MainWindow::updateWidget(QByteArray encoded_msg)
                 {"roll", (double) plane_euler_decoded.roll},
                 {"yaw", (double) plane_euler_decoded.yaw}
             };
-            write_to_POGI_JSON(QString("eulerAnglesOfPlane"), QJsonValue(plane_euler), this->POGIFilePath);
+            //write_to_POGI_JSON(QString("eulerAnglesOfPlane"), QJsonValue(plane_euler), this->POGIFilePath);
         }
         break;
 
@@ -154,7 +198,7 @@ void MainWindow::updateWidget(QByteArray encoded_msg)
                 {"roll", (double) camera_euler_decoded.roll},
                 {"yaw", (double) camera_euler_decoded.yaw}
             };
-            write_to_POGI_JSON(QString("eulerAnglesOfCamera"), QJsonValue(camera_euler), this->POGIFilePath);
+            //write_to_POGI_JSON(QString("eulerAnglesOfCamera"), QJsonValue(camera_euler), this->POGIFilePath);
         }
         break;
 
@@ -171,21 +215,21 @@ void MainWindow::updateWidget(QByteArray encoded_msg)
                 ui->data_isLanded->setText("False");
             }
 
-            write_to_POGI_JSON(QString("isLanded"), QJsonValue((bool) is_landed_decoded.cmd), this->POGIFilePath);
+            //write_to_POGI_JSON(QString("isLanded"), QJsonValue((bool) is_landed_decoded.cmd), this->POGIFilePath);
         }
         break;
 
-        case MESSAGE_ID_AIR_SPEED:      // data goes to CV
+        case MESSAGE_ID_AIR_SPEED:      // data goes to CV (air to ground)
         {
             four_bytes_float_cmd_t airspeed_decoded;
             memcpy(&airspeed_decoded, &decoded_message_buffer, sizeof(four_bytes_float_cmd_t));
             ui->data_currentAirspeed->setNum((double) airspeed_decoded.cmd);
 
-            write_to_POGI_JSON(QString("currentAirspeed"), QJsonValue((double) airspeed_decoded.cmd), this->POGIFilePath);
+            //write_to_POGI_JSON(QString("currentAirspeed"), QJsonValue((double) airspeed_decoded.cmd), this->POGIFilePath);
         }
         break;
 
-        case MESSAGE_ID_HOMEBASE_INITIALIZED:   // data goes to Pilot
+        case MESSAGE_ID_HOMEBASE_INITIALIZED:   // data goes to Pilot (ground to air)
         {
             single_bool_cmd_t homebase_init_decoded;
             memcpy(&homebase_init_decoded, &decoded_message_buffer, sizeof(single_bool_cmd_t));
@@ -270,6 +314,7 @@ void MainWindow::on_setWaypointNumberButton_clicked()
 
 void MainWindow::on_sendInfoButton_clicked()
 {
+    //qDebug() << "Testing here";
     QString waypointModifyFlightPathCommand = enumSelection(ui->waypointModifyFlightPathCommandBox);
     ui->waypointModifyFlightPathCommandBox->itemData(0);
 
@@ -397,7 +442,7 @@ void MainWindow::pigoFileChanged(const QString & path)
    }
 }
 
-void MainWindow::on_readingButton_clicked()
+void MainWindow::on_readingButton_clicked() //******************
 {
     if (allowReading){
         ui->readingButton->setText("Start Reading");
@@ -429,7 +474,7 @@ void MainWindow::on_pogiBrowseButton_clicked()
 
 
 ///////////////////////////////////////////////////////////
-// MAIN FUNCITONS
+// MAIN FUNCTIONS
 ///////////////////////////////////////////////////////////
 
 void MainWindow::addWaypoint(int num, QFormLayout *layout, int maxNum)

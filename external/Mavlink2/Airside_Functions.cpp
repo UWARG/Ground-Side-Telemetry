@@ -24,7 +24,7 @@ mavlink_decoding_status_t Mavlink_airside_decoder(PIGO_Message_IDs_e* type, uint
 {
     int channel = MAVLINK_COMM_0; //mavlink default one channel
     PIGO_Message_IDs_e decoded_message_type = MESSAGE_ID_NONE;
-    mavlink_decoding_status_t decoding_status = MAVLINK_DECODING_INCOMPLETE;
+    mavlink_decoding_status_t decoding_status =DECODING_INCOMPLETE;
 
     mavlink_status_t status;
     memset(&status, 0x00, sizeof(mavlink_status_t));
@@ -40,7 +40,7 @@ mavlink_decoding_status_t Mavlink_airside_decoder(PIGO_Message_IDs_e* type, uint
     {
         if (telemetryData == NULL)
         {
-            return MAVLINK_DECODING_FAIL;
+            return DECODING_FAIL;
         }
 
         switch(decoded_msg.msgid)
@@ -72,7 +72,7 @@ mavlink_decoding_status_t Mavlink_airside_decoder(PIGO_Message_IDs_e* type, uint
                             decoded_message_type = (PIGO_Message_IDs_e) warg_ID;
                             *type = decoded_message_type;
 
-                            return MAVLINK_DECODING_OKAY;          
+                            return DECODING_OKAY;
                         }
 
                         case MESSAGE_ID_WAYPOINTS:
@@ -92,7 +92,7 @@ mavlink_decoding_status_t Mavlink_airside_decoder(PIGO_Message_IDs_e* type, uint
                             decoded_message_type = (PIGO_Message_IDs_e) warg_ID;
                             *type = decoded_message_type;
 
-                            return MAVLINK_DECODING_OKAY;
+                            return DECODING_OKAY;
                         }
 
                         case MESSAGE_ID_NUM_WAYPOINTS:
@@ -112,7 +112,7 @@ mavlink_decoding_status_t Mavlink_airside_decoder(PIGO_Message_IDs_e* type, uint
                             decoded_message_type = (PIGO_Message_IDs_e) warg_ID;
                             *type = decoded_message_type;
 
-                            return MAVLINK_DECODING_OKAY;
+                            return DECODING_OKAY;
                         }
 
                         case MESSAGE_ID_GIMBAL_CMD:
@@ -128,7 +128,7 @@ mavlink_decoding_status_t Mavlink_airside_decoder(PIGO_Message_IDs_e* type, uint
                             decoded_message_type = (PIGO_Message_IDs_e) warg_ID;
                             *type = decoded_message_type;
 
-                            return MAVLINK_DECODING_OKAY; 
+                            return DECODING_OKAY;
                         }
 
                         case MESSAGE_ID_GROUND_CMD:
@@ -144,7 +144,7 @@ mavlink_decoding_status_t Mavlink_airside_decoder(PIGO_Message_IDs_e* type, uint
                             decoded_message_type = (PIGO_Message_IDs_e) warg_ID;
                             *type = decoded_message_type;
 
-                            return MAVLINK_DECODING_OKAY;                  
+                            return DECODING_OKAY;
                         }
 
                         case MESSAGE_ID_WAYPOINT_MODIFY_PATH_CMD:
@@ -161,7 +161,7 @@ mavlink_decoding_status_t Mavlink_airside_decoder(PIGO_Message_IDs_e* type, uint
                             decoded_message_type = (PIGO_Message_IDs_e) warg_ID;
                             *type = decoded_message_type;
 
-                            return MAVLINK_DECODING_OKAY;
+                            return DECODING_OKAY;
                         }
 
                         case MESSAGE_ID_BEGIN_LANDING:
@@ -178,20 +178,20 @@ mavlink_decoding_status_t Mavlink_airside_decoder(PIGO_Message_IDs_e* type, uint
                             decoded_message_type = (PIGO_Message_IDs_e) warg_ID;
                             *type = decoded_message_type;
 
-                            return MAVLINK_DECODING_OKAY;                       
+                            return DECODING_OKAY;
                         }
 
                         default:
-                            return MAVLINK_DECODING_FAIL;
+                            return DECODING_FAIL;
                     }// end of inner switch
                 }
 
             default:
-                return MAVLINK_DECODING_FAIL;
+                return DECODING_FAIL;
         }// end of outter switch
     }// if message received
 
-    return MAVLINK_DECODING_INCOMPLETE;
+    return DECODING_INCOMPLETE;
 }
 
 mavlink_encoding_status_t Mavlink_airside_encoder(POGI_Message_IDs_e msgID, mavlink_message_t *message, const uint8_t *struct_ptr) 
@@ -388,7 +388,7 @@ int test__encode_then_decode(void)
 
     //---------------------------------- decoding starts ---------------------------------- 
 
-    mavlink_decoding_status_t decoderStatus = MAVLINK_DECODING_INCOMPLETE;
+    mavlink_decoding_status_t decoderStatus = DECODING_INCOMPLETE;
 
     char decoded_message_buffer[50]; //256 is the max payload length
 
@@ -398,7 +398,7 @@ int test__encode_then_decode(void)
 
     for( int i = 0; i < 50; i++) // 50 is just a random number larger than message length (for GPS message length is 39)
     {
-        if (decoderStatus != MAVLINK_DECODING_OKAY)
+        if (decoderStatus != DECODING_OKAY)
         {
             printf("copying byte: %d  |  current byte : %hhx\n", i, ptr_in_byte[i]);
             decoderStatus = Mavlink_airside_decoder(&message_type, ptr_in_byte[i], (uint8_t*) &decoded_message_buffer);
@@ -412,7 +412,7 @@ int test__encode_then_decode(void)
     printf("%i\n", cmd_decoded.cmd);
     //printf("%i\n", cmd_decoded.latestDistance);
 
-    if (decoderStatus == MAVLINK_DECODING_OKAY)
+    if (decoderStatus == DECODING_OKAY)
     {
         int result = 1;
 

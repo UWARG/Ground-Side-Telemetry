@@ -10,14 +10,17 @@
 
 #include "Groundside_Functions.hpp"
 
-mavlink_decoding_status_t Mavlink_groundside_decoder(POGI_Message_IDs_e* type, uint8_t incomingByte, uint8_t *telemetryData)
+mavlink_decoding_status_t groundside_decoder(POGI_Message_IDs_e* type, uint8_t incomingByte, uint8_t *telemetryData)
 {
     int channel = MAVLINK_COMM_0; //mavlink default one channel
-    POGI_Message_IDs_e decoded_message_type = POGI_MESSAGE_ID_NONE;
-    mavlink_decoding_status_t decoding_status = MAVLINK_DECODING_INCOMPLETE;
+    POGI_Message_IDs_e decoded_message_type = POGI_MESSAGE_ID_NONE; // value -1
+    mavlink_decoding_status_t decoding_status = DECODING_INCOMPLETE; // value 0
 
     mavlink_status_t status;
     memset(&status, 0x00, sizeof(mavlink_status_t));
+    // status points to a block of memory
+    // 0x00 is the integer value that fills the memory
+    // sizeof(mavlink_status_t) is the number of bytes of block of memory that will be filled
 
     mavlink_message_t decoded_msg;
     memset(&decoded_msg, 0x00, sizeof(mavlink_message_t));
@@ -25,23 +28,33 @@ mavlink_decoding_status_t Mavlink_groundside_decoder(POGI_Message_IDs_e* type, u
     // this function parses the incoming bytes, and the decoded_msg will get filled when the full message is received
     // more details about the parser function: http://docs.ros.org/en/indigo/api/mavlink/html/include__v2_80_2mavlink__helpers_8h.html#ad91e8323cefc65965574c09e72365d7d
     uint8_t message_received = mavlink_parse_char(channel, incomingByte, &decoded_msg, &status);
+    // channel is the ID of the current channel, allows for parsing in different channels
+    // incomingByte is the char to parse
+    // &decoded_msg is the message data that is decoded
+    // &status is the channel's status
+    // This functions basically checks if the the message could or could not be decoded and decodes it
 
-    if (message_received)
+    if (message_received) // if the function returned 1
     {
         if (telemetryData == NULL)
         {
-            return MAVLINK_DECODING_FAIL;
+            return DECODING_FAIL;
         }
 
-        switch(decoded_msg.msgid)
+        switch(decoded_msg.msgid) // the message id of the decoded message
         {
             case MAVLINK_MSG_ID_GLOBAL_POSITION_INT: // ID for GLOBAL_POSITION_INT, 33
                 {
-                    mavlink_global_position_int_t global_position;
+                    mavlink_global_position_int_t global_position; // global_position is an object, has .lat, .lon, .alt, .hdg
                     memset(&global_position, 0x00, sizeof(mavlink_global_position_int_t));
 
-                    mavlink_msg_global_position_int_decode(&decoded_msg, &global_position);
-                    uint32_t warg_ID = global_position.time_boot_ms;
+                    mavlink_msg_global_position_int_decode(&decoded_msg, &global_position); // look into: understand
+     // static void mavlink_msg_global_position_int_decode(const mavlink_message_t *msg, mavlink_global_position_int_t *global_position_int)
+                    // this function above decodes a global_position_int message into a struct
+                    // decoded_msg is the message to decode
+                    // global_position is the C-struct to decode the message contents into
+
+                    uint32_t warg_ID = global_position.time_boot_ms; // message id stored in ward_ID
 
                     // we are borrowing the GPS struct to transfer our own commands, the global_position.time_boot_ms is used to store our message ID
                     // the follow code first seperates the messages into different catagories based on their IDs, then completes the decoding process
@@ -59,7 +72,7 @@ mavlink_decoding_status_t Mavlink_groundside_decoder(POGI_Message_IDs_e* type, u
                             decoded_message_type = (POGI_Message_IDs_e) warg_ID;
                             *type = decoded_message_type;
 
-                            return MAVLINK_DECODING_OKAY; 
+                            return DECODING_OKAY;
 
                         }
 
@@ -77,7 +90,7 @@ mavlink_decoding_status_t Mavlink_groundside_decoder(POGI_Message_IDs_e* type, u
                             decoded_message_type = (POGI_Message_IDs_e) warg_ID;
                             *type = decoded_message_type;
 
-                            return MAVLINK_DECODING_OKAY;
+                            return DECODING_OKAY;
                         } 
 
                         case MESSAGE_ID_EULER_ANGLE_PLANE:
@@ -95,7 +108,7 @@ mavlink_decoding_status_t Mavlink_groundside_decoder(POGI_Message_IDs_e* type, u
                             decoded_message_type = (POGI_Message_IDs_e) warg_ID;
                             *type = decoded_message_type;
 
-                            return MAVLINK_DECODING_OKAY;
+                            return DECODING_OKAY;
                         }
 
                         case MESSAGE_ID_IS_LANDED:
@@ -111,7 +124,7 @@ mavlink_decoding_status_t Mavlink_groundside_decoder(POGI_Message_IDs_e* type, u
                             decoded_message_type = (POGI_Message_IDs_e) warg_ID;
                             *type = decoded_message_type;
 
-                            return MAVLINK_DECODING_OKAY;
+                            return DECODING_OKAY;
                         }
 
                         case MESSAGE_ID_CURRENT_WAYPOINT_LD:
@@ -127,7 +140,7 @@ mavlink_decoding_status_t Mavlink_groundside_decoder(POGI_Message_IDs_e* type, u
                             decoded_message_type = (POGI_Message_IDs_e) warg_ID;
                             *type = decoded_message_type;
 
-                            return MAVLINK_DECODING_OKAY;
+                            return DECODING_OKAY;
                         } 
 
                         case MESSAGE_ID_AIR_SPEED:
@@ -142,7 +155,7 @@ mavlink_decoding_status_t Mavlink_groundside_decoder(POGI_Message_IDs_e* type, u
                             decoded_message_type = (POGI_Message_IDs_e) warg_ID;
                             *type = decoded_message_type;
 
-                            return MAVLINK_DECODING_OKAY;
+                            return DECODING_OKAY;
                         }
 
                         case MESSAGE_ID_ERROR_CODE:
@@ -159,20 +172,20 @@ mavlink_decoding_status_t Mavlink_groundside_decoder(POGI_Message_IDs_e* type, u
                             decoded_message_type = (POGI_Message_IDs_e) warg_ID;
                             *type = decoded_message_type;
 
-                            return MAVLINK_DECODING_OKAY;
+                            return DECODING_OKAY;
                         }
 
                         default:
-                            return MAVLINK_DECODING_FAIL;
+                            return DECODING_FAIL;
                     }// end of inner switch
                 }
 
             default:
-                return MAVLINK_DECODING_FAIL;
+                return DECODING_FAIL;
         }// end of outter switch
     }// if message received
 
-    return MAVLINK_DECODING_INCOMPLETE;
+    return DECODING_INCOMPLETE;
 }
 
 

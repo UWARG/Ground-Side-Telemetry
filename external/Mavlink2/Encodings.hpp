@@ -13,9 +13,9 @@
 #include "Mavlink2_lib/common/mavlink.h"
 
 enum mavlink_decoding_status_t{
-    MAVLINK_DECODING_INCOMPLETE=0,
-    MAVLINK_DECODING_OKAY=1,
-    MAVLINK_DECODING_FAIL=2,
+    DECODING_INCOMPLETE=0,
+    DECODING_OKAY=1,
+    DECODING_FAIL=2,
 };
 
 enum mavlink_encoding_status_t{
