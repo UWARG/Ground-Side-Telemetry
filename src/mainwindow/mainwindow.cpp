@@ -56,8 +56,6 @@ MainWindow::MainWindow(QWidget *parent)
     /* init decoding fields */
     this->decoderStatus = MAVLINK_DECODING_INCOMPLETE;
 
-
-
 }
 
 MainWindow::~MainWindow()
@@ -114,36 +112,11 @@ void MainWindow::on_updateWidget_clicked()
  *
  */
 void MainWindow::updateWidget(QByteArray encoded_msg) // ex: 7E | 00 19 | 10 | 01 | 00 13 A2 00 41 B1 6D 1C | FF FE | 00 | 00 | 53 45 4E 54 20 46 52 4F 4D 20 42 | D1
-{ // make a button to call updatewidget, also change array name to match parameter
-    // make popup window/widget to show variable info
-
+{
     /* decode the data */
-
-//    mavlink_decoding_status_t decoderStatus = MAVLINK_DECODING_INCOMPLETE;
-
-//    char decoded_message_buffer[50]; //256 is the max payload length
 
     // decoder gets one byte at a time from a serial port
     POGI_Message_IDs_e message_type = POGI_MESSAGE_ID_NONE;
-
-//    for( int i = 0; i < encoded_msg.size(); i++) // 50 is just a random number larger than message length (for GPS message length is 39)
-//    {
-//        if (decoderStatus != MAVLINK_DECODING_OKAY)
-//        {
-//            printf("copying byte: %d  |  current byte : %hhx\n", i, encoded_msg.at(i));
-//            decoderStatus = Mavlink_groundside_decoder(&message_type, encoded_msg.at(i), (uint8_t*) &decoded_message_buffer);
-//        }
-//    }
-
-    //qDebug() << "Testing here";
-
-    /*
-    Note: Signed variables, such as signed integers will allow you to represent numbers both in the positive and negative ranges.
-          Unsigned variables, such as unsigned integers, will only allow you to represent numbers in the positive and zero.
-    */
-
-    //QByteArray testing_array = {7E, 00, 19, 90, 01, 00, 13, A2, 00, 41, B1, 6D, 1C, FF, FE, 00, 00, 53, 45, 4E, 54, 20, 46, 52, 4F, 4D, 20, 42, D1}
-
 
     // constants
     const uint STARTING_DELIMINATOR_7E_VALUE = 126;
@@ -188,7 +161,7 @@ void MainWindow::updateWidget(QByteArray encoded_msg) // ex: 7E | 00 19 | 10 | 0
                 sixtyfour_bit[i] = encoded_msg[i + SIXTYFOUR_BIT_START_POSITION]; // fill with {00 13 A2 00 41 B1 6D 1C}
                 // qDebug() << sixtyfour_bit[i]; so this outputs weird characters since they are bytes
                 // to output properly in binary, you will need to declare a new quint8, give the value
-                // to the unsigned int, the qDebug() the quint8 to output to the Application Output
+                // to the unsigned int, then qDebug() the quint8 to output to the Application Output
 
                 // convert to string here
                 str = sixtyfour_bit[i];
@@ -198,32 +171,17 @@ void MainWindow::updateWidget(QByteArray encoded_msg) // ex: 7E | 00 19 | 10 | 0
                 quint8 temp = sixtyfour_bit[i];
                 total += temp; // accumulate an int representing the 64 bit address
             }
-            //qDebug() << total; // prints 560 representing the 64 bit address
 
             qDebug() << "64 bit address: ";
             qDebug() << sixtyfour_bit; // prints "\x00\x13\xA2\x00""A\xB1m\x1C"
-            // breakdown:
-            /*
-                "\u0000" [0]
-                "\u0013" [1]
-                "¢"      [2]
-                "\u0000" [3]
-                "A"      [4]
-                "±"      [5]
-                "m"      [6]
-                "\u001C" [7]
-            */
 
-            //qDebug () << "Testing: ";
             QString cv_address = QStringLiteral("\u0000\u0013¢\u0000A±m\u001C");
-            //bool check = (str_sixtyfour_bit == cv_address);
-            //qDebug() << check; // check is true
 
             if (total == -1) // CHECK SIXTYFOUR_BIT IF IT IS FW ADDRESS
             {
                 qDebug () << "You ran the FW case.";
                 // pass;
-                // call FW function?
+                // call FW function
             }
             else if (str_sixtyfour_bit == cv_address) // CHECK SIXTYFOUR_BIT IF IT IS CV ADDRESS (560 is the value for the example)
             {
@@ -232,10 +190,6 @@ void MainWindow::updateWidget(QByteArray encoded_msg) // ex: 7E | 00 19 | 10 | 0
                 quint8 broadcast_radius = 0x00;
 
                 quint8 options = 0x00;
-
-                //qDebug() << length_of_message; //outputs 11
-
-                // 7E | 00 19 | 90 | 01 | 00 13 A2 00 41 B1 6D 1C | FF FE | 00 | 00 | 53 45 4E 54 20 46 52 4F 4D 20 42 | D1
 
                 QByteArray message;
                 message.resize(length_of_message);
@@ -254,7 +208,6 @@ void MainWindow::updateWidget(QByteArray encoded_msg) // ex: 7E | 00 19 | 10 | 0
                 qDebug() << "Message: ";
                 qDebug() << str_message; // prints "SENT FROM B"
 
-
                 const uint DATE_LENGTH = 6;
                 const uint TIME_LENGTH = 4;
                 const uint INFO_LENGTH = length_of_message - (DATE_LENGTH + TIME_LENGTH);
@@ -268,16 +221,6 @@ void MainWindow::updateWidget(QByteArray encoded_msg) // ex: 7E | 00 19 | 10 | 0
                 QStringRef time(&str_message, INFO_LENGTH + DATE_LENGTH, TIME_LENGTH);
                 qDebug() << time; // prints "OM B"
 
-                //QString temp = info + date + time;
-                //qDebug() << temp; // testing concatenation of string, prints "SENT FROM B"
-
-                //QByteArray text = QByteArray::fromHex("53454E542046524F4D2042"); // WORKS! FIND A WAY TO STORE "53454E542046524F4D2042" TO QSTRING VARIABLE?!
-                //qDebug() << text.data();
-
-                //* hexadecimal 0xED8788DC is equivalent to decimal 3985082588 */ QString str = "53454E542046524F4D2042"; bool ok; uint appId = str.toUInt(&ok,16); //appId contains 3985082588
-                // converting hex to decimal below
-                //qDebug() << appId;
-
                 quint8 check_sum = encoded_msg[3 + frame_length];
                 qDebug() << "Checksum: ";
                 qDebug() << check_sum; // outputs 209
@@ -289,21 +232,6 @@ void MainWindow::updateWidget(QByteArray encoded_msg) // ex: 7E | 00 19 | 10 | 0
         }
 
     }
-
-    //connect(updateWidget, SIGNAL(clicked()), this, SLOT(on_updateWidget_clicked()));
-    //QApplication app(argc, argv);
-
-    /* To cast int to qstring:
-    int i = 42;
-    QString s = QString::number(i);
-
-         QWidget window;
-         window.resize(320, 240);
-         window.show();
-         window.setWindowTitle(
-             QApplication::translate("toplevel", "Top-level widget"));
-         //return app.exec();
-    */
 
     /* output to the GUI */
 
