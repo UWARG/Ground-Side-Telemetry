@@ -170,6 +170,7 @@ private slots:
     void on_readingButton_clicked();
     void on_pigoBrowseButton_clicked();
     void on_pogiBrowseButton_clicked();
+    void on_updateWidget_clicked();
 
 private:
 

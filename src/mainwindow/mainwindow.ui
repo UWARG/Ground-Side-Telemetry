@@ -394,8 +394,8 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>367</width>
-           <height>559</height>
+           <width>407</width>
+           <height>584</height>
           </rect>
          </property>
         </widget>
@@ -432,15 +432,25 @@
         </property>
        </widget>
       </item>
+      <item row="3" column="0" colspan="2">
+       <widget class="QLabel" name="label_19">
+        <property name="text">
+         <string>CV POGI FILE:</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLineEdit" name="pogiFileNameEdit"/>
+      </item>
       <item row="4" column="1">
        <widget class="QPushButton" name="pogiBrowseButton">
         <property name="text">
          <string>Browse</string>
         </property>
        </widget>
-      </item>
-      <item row="4" column="0">
-       <widget class="QLineEdit" name="pogiFileNameEdit"/>
       </item>
       <item row="5" column="0" colspan="2">
        <widget class="QPushButton" name="pushButton_2">
@@ -449,13 +459,10 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="0" colspan="2">
-       <widget class="QLabel" name="label_19">
+      <item row="6" column="0">
+       <widget class="QPushButton" name="updateWidget">
         <property name="text">
-         <string>CV POGI FILE:</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
+         <string>updateWidget</string>
         </property>
        </widget>
       </item>

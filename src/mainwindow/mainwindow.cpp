@@ -1,4 +1,4 @@
-#include "mainwindow.h"
+ #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
 #include "json_functions/Json_Functions.h"
@@ -13,6 +13,12 @@
 #include <iostream>
 #include <QDebug>
 #include <iostream>
+
+// added libraries below
+#include <iostream>
+#include <iomanip>
+#include <sstream>
+#include <QMessageBox>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow)
@@ -63,32 +69,241 @@ MainWindow::~MainWindow()
 // SLOTS
 ///////////////////////////////////////////////////////////
 
+void MainWindow::on_updateWidget_clicked()
+{
+    QByteArray testing_array;
+    testing_array.resize(29); // https://blog.fireheart.in/a?ID=01750-818441ff-32e9-419f-9738-f66b0570d4d2
+
+    testing_array[0] = 0x7E;
+    testing_array[1] = 0x00;
+    testing_array[2] = 0x19;
+    testing_array[3] = 0x90;
+    testing_array[4] = 0x01;
+    testing_array[5] = 0x00;
+    testing_array[6] = 0x13;
+    testing_array[7] = 0xA2;
+    testing_array[8] = 0x00;
+    testing_array[9] = 0x41;
+    testing_array[10] = 0xB1;
+    testing_array[11] = 0x6D;
+    testing_array[12] = 0x1C;
+    testing_array[13] = 0xFF;
+    testing_array[14] = 0xFE;
+    testing_array[15] = 0x00;
+    testing_array[16] = 0x00;
+    testing_array[17] = 0x53;
+    testing_array[18] = 0x45;
+    testing_array[19] = 0x4E;
+    testing_array[20] = 0x54;
+    testing_array[21] = 0x20;
+    testing_array[22] = 0x46;
+    testing_array[23] = 0x52;
+    testing_array[24] = 0x4F;
+    testing_array[25] = 0x4D;
+    testing_array[26] = 0x20;
+    testing_array[27] = 0x42;
+    testing_array[28] = 0xD1;
+
+    updateWidget(testing_array);
+}
+
 /**
  * @brief Slot to update the GUI with data received from the plane; for CV data, it also outputs to the POGI file
  *
  * @param encoded_msg The complete message as parsed by the handleSerialRead signal
  *
  */
-void MainWindow::updateWidget(QByteArray encoded_msg)
-{
+void MainWindow::updateWidget(QByteArray encoded_msg) // ex: 7E | 00 19 | 10 | 01 | 00 13 A2 00 41 B1 6D 1C | FF FE | 00 | 00 | 53 45 4E 54 20 46 52 4F 4D 20 42 | D1
+{ // make a button to call updatewidget, also change array name to match parameter
+    // make popup window/widget to show variable info
 
     /* decode the data */
 
-    mavlink_decoding_status_t decoderStatus = MAVLINK_DECODING_INCOMPLETE;
+//    mavlink_decoding_status_t decoderStatus = MAVLINK_DECODING_INCOMPLETE;
 
-    char decoded_message_buffer[50]; //256 is the max payload length
+//    char decoded_message_buffer[50]; //256 is the max payload length
 
     // decoder gets one byte at a time from a serial port
     POGI_Message_IDs_e message_type = POGI_MESSAGE_ID_NONE;
 
-    for( int i = 0; i < encoded_msg.size(); i++) // 50 is just a random number larger than message length (for GPS message length is 39)
+//    for( int i = 0; i < encoded_msg.size(); i++) // 50 is just a random number larger than message length (for GPS message length is 39)
+//    {
+//        if (decoderStatus != MAVLINK_DECODING_OKAY)
+//        {
+//            printf("copying byte: %d  |  current byte : %hhx\n", i, encoded_msg.at(i));
+//            decoderStatus = Mavlink_groundside_decoder(&message_type, encoded_msg.at(i), (uint8_t*) &decoded_message_buffer);
+//        }
+//    }
+
+    //qDebug() << "Testing here";
+
+    /*
+    Note: Signed variables, such as signed integers will allow you to represent numbers both in the positive and negative ranges.
+          Unsigned variables, such as unsigned integers, will only allow you to represent numbers in the positive and zero.
+    */
+
+    //QByteArray testing_array = {7E, 00, 19, 90, 01, 00, 13, A2, 00, 41, B1, 6D, 1C, FF, FE, 00, 00, 53, 45, 4E, 54, 20, 46, 52, 4F, 4D, 20, 42, D1}
+
+
+    // constants
+    const uint STARTING_DELIMINATOR_7E_VALUE = 126;
+    const uint FRAME_TYPE_90_VALUE = 144;
+    const uint FRAME_TYPE_8B_VALUE = 139;
+
+    // Double check correct data types in declaration
+    quint8 start_deliminator = encoded_msg[0]; // unsigned byte 7E
+    qDebug() << "Start Deliminator: ";
+    qDebug() << start_deliminator; // outputs 126
+
+    quint8 frame_length = encoded_msg[2]; // READ THE LENGTH OF FRAME
+    qDebug() << "Frame length: ";
+    qDebug() << frame_length; // outputs 25
+    uint length_of_message = frame_length - 14; // STORE THE ACTUAL LENGTH OF MESSAGE INTO VARIABLE
+    qDebug() << "Length of message: ";
+    qDebug() << length_of_message;
+
+    quint8 frame_type = encoded_msg[3]; // 90 or 8B
+    qDebug() << "Frame type: ";
+    qDebug() << frame_type; // 90 -> 144, 8B -> 139 (to binary)
+
+    if (start_deliminator == STARTING_DELIMINATOR_7E_VALUE) // CHECK IF THE START DELIMINATOR IS 7E: DECLARED AS CONSTANT
     {
-        if (decoderStatus != MAVLINK_DECODING_OKAY)
+        if (frame_type == FRAME_TYPE_90_VALUE) // CHECK IF FRAME TYPE IS 90 (split 2 different if cases)
         {
-            printf("copying byte: %d  |  current byte : %hhx\n", i, encoded_msg.at(i));
-            decoderStatus = Mavlink_groundside_decoder(&message_type, encoded_msg.at(i), (uint8_t*) &decoded_message_buffer);
+            quint8 frame_ID = encoded_msg[4];
+            qDebug() << "Frame ID: ";
+            qDebug() << frame_ID; // outputs 1
+
+            QByteArray sixtyfour_bit; // need to store 8 bytes
+            sixtyfour_bit.resize(8);
+
+            QString str_sixtyfour_bit;
+            QString str;
+
+            const uint SIXTYFOUR_BIT_START_POSITION = 5;
+            int total = 0;
+
+            for (int i = 0; i < sixtyfour_bit.size(); i++) // use slicing function c++?
+            {
+                sixtyfour_bit[i] = encoded_msg[i + SIXTYFOUR_BIT_START_POSITION]; // fill with {00 13 A2 00 41 B1 6D 1C}
+                // qDebug() << sixtyfour_bit[i]; so this outputs weird characters since they are bytes
+                // to output properly in binary, you will need to declare a new quint8, give the value
+                // to the unsigned int, the qDebug() the quint8 to output to the Application Output
+
+                // convert to string here
+                str = sixtyfour_bit[i];
+                str_sixtyfour_bit += str;
+                //qDebug() << str;
+
+                quint8 temp = sixtyfour_bit[i];
+                total += temp; // accumulate an int representing the 64 bit address
+            }
+            //qDebug() << total; // prints 560 representing the 64 bit address
+
+            qDebug() << "64 bit address: ";
+            qDebug() << sixtyfour_bit; // prints "\x00\x13\xA2\x00""A\xB1m\x1C"
+            // breakdown:
+            /*
+                "\u0000" [0]
+                "\u0013" [1]
+                "¢"      [2]
+                "\u0000" [3]
+                "A"      [4]
+                "±"      [5]
+                "m"      [6]
+                "\u001C" [7]
+            */
+
+            //qDebug () << "Testing: ";
+            QString cv_address = QStringLiteral("\u0000\u0013¢\u0000A±m\u001C");
+            //bool check = (str_sixtyfour_bit == cv_address);
+            //qDebug() << check; // check is true
+
+            if (total == -1) // CHECK SIXTYFOUR_BIT IF IT IS FW ADDRESS
+            {
+                qDebug () << "You ran the FW case.";
+                // pass;
+                // call FW function?
+            }
+            else if (str_sixtyfour_bit == cv_address) // CHECK SIXTYFOUR_BIT IF IT IS CV ADDRESS (560 is the value for the example)
+            {
+                quint16 sixteen_bit = 0xFFFE; // will be FF FE default
+
+                quint8 broadcast_radius = 0x00;
+
+                quint8 options = 0x00;
+
+                //qDebug() << length_of_message; //outputs 11
+
+                // 7E | 00 19 | 90 | 01 | 00 13 A2 00 41 B1 6D 1C | FF FE | 00 | 00 | 53 45 4E 54 20 46 52 4F 4D 20 42 | D1
+
+                QByteArray message;
+                message.resize(length_of_message);
+
+                QString str_message;
+
+                const uint MESSAGE_START_POSITION = 17;
+
+                for (int i = 0; i < message.size(); i++)
+                {
+                    message[i] = encoded_msg[i + MESSAGE_START_POSITION]; // 53 45 4E 54 20 46 52 4F 4D 20 42 message is "SENT FROM B"
+                }
+
+                str_message = message;
+
+                qDebug() << "Message: ";
+                qDebug() << str_message; // prints "SENT FROM B"
+
+
+                const uint DATE_LENGTH = 6;
+                const uint TIME_LENGTH = 4;
+                const uint INFO_LENGTH = length_of_message - (DATE_LENGTH + TIME_LENGTH);
+
+                QStringRef info(&str_message, 0, INFO_LENGTH);
+                qDebug() << info; // prints "S"
+
+                QStringRef date(&str_message, INFO_LENGTH, DATE_LENGTH);
+                qDebug() << date; // prints "ENT FR"
+
+                QStringRef time(&str_message, INFO_LENGTH + DATE_LENGTH, TIME_LENGTH);
+                qDebug() << time; // prints "OM B"
+
+                //QString temp = info + date + time;
+                //qDebug() << temp; // testing concatenation of string, prints "SENT FROM B"
+
+                //QByteArray text = QByteArray::fromHex("53454E542046524F4D2042"); // WORKS! FIND A WAY TO STORE "53454E542046524F4D2042" TO QSTRING VARIABLE?!
+                //qDebug() << text.data();
+
+                //* hexadecimal 0xED8788DC is equivalent to decimal 3985082588 */ QString str = "53454E542046524F4D2042"; bool ok; uint appId = str.toUInt(&ok,16); //appId contains 3985082588
+                // converting hex to decimal below
+                //qDebug() << appId;
+
+                quint8 check_sum = encoded_msg[3 + frame_length];
+                qDebug() << "Checksum: ";
+                qDebug() << check_sum; // outputs 209
+            }
         }
+        else if (frame_type == FRAME_TYPE_8B_VALUE) // CHECK IF FRAME TYPE IS 8B
+        {
+
+        }
+
     }
+
+    //connect(updateWidget, SIGNAL(clicked()), this, SLOT(on_updateWidget_clicked()));
+    //QApplication app(argc, argv);
+
+    /* To cast int to qstring:
+    int i = 42;
+    QString s = QString::number(i);
+
+         QWidget window;
+         window.resize(320, 240);
+         window.show();
+         window.setWindowTitle(
+             QApplication::translate("toplevel", "Top-level widget"));
+         //return app.exec();
+    */
 
     /* output to the GUI */
 
@@ -270,6 +485,12 @@ void MainWindow::on_setWaypointNumberButton_clicked()
 
 void MainWindow::on_sendInfoButton_clicked()
 {
+
+
+
+
+
+
     QString waypointModifyFlightPathCommand = enumSelection(ui->waypointModifyFlightPathCommandBox);
     ui->waypointModifyFlightPathCommandBox->itemData(0);
 
@@ -601,3 +822,6 @@ uint32_t MainWindow::toInt32(float f_value){
     uint32_t* f_value_Int32 = reinterpret_cast<uint32_t*>(&f_value);
     return *f_value_Int32;
 }
+
+
+
