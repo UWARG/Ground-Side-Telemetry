@@ -132,8 +132,8 @@ public:
     void addWaypoint(int num, QFormLayout* layout, int maxNum);
 
     // Helper that calls the encoder to sends the data to the plane
-    void convertMessage(QString data, PIGO_Message_IDs_e msg_id);
-    void convertMessage(QList<QString> data, PIGO_Message_IDs_e msg_id);
+    //void convertMessage(QString data, PIGO_Message_IDs_e msg_id);
+    //void convertMessage(QList<QString> data, PIGO_Message_IDs_e msg_id);
 
     // Helper to remove layout items
     void remove(QLayout* layout);
@@ -165,12 +165,13 @@ public slots:
 private slots:
 
     void on_setWaypointNumberButton_clicked();
-    void on_sendInfoButton_clicked();
-    void pigoFileChanged(const QString & path);
-    void on_readingButton_clicked();
-    void on_pigoBrowseButton_clicked();
-    void on_pogiBrowseButton_clicked();
-    void on_updateWidget_clicked();
+    //void on_sendInfoButton_clicked();
+    //void pigoFileChanged(const QString & path);
+    //void on_readingButton_clicked();
+    //void on_pigoBrowseButton_clicked();
+    //void on_pogiBrowseButton_clicked();
+
+    void on_testUpdateWidget_clicked();
 
 private:
 
