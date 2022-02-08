@@ -1,4 +1,4 @@
- #include "mainwindow.h"
+#include "mainwindow.h"
 #include "ui_mainwindow.h"
 
 #include "json_functions/Json_Functions.h"
@@ -18,6 +18,56 @@
 #include <iomanip>
 #include <sstream>
 #include <QMessageBox>
+
+#include <QMediaPlayer>
+#include <QVideoWidget>
+#include <QCamera>
+#include <QCameraInfo>
+
+#include <QScopedPointer>
+#include <QVBoxLayout>
+#include <QAction>
+#include <QCameraImageCapture>
+#include <QCameraViewfinder>
+
+void MainWindow::on_testVideo_clicked()
+{
+    QMediaPlayer *player = new QMediaPlayer;
+    QVideoWidget *vw = new QVideoWidget;
+
+    player->setVideoOutput(vw);
+
+    player->setMedia(QUrl::fromLocalFile("C:/Users/Owner/Documents/Jeffrey/School/Waterloo/Co-op/WARG/gstreamer_work/video.mp4"));
+    // forward slash to specify mp4 file destination
+
+    vw->setGeometry(600, 400, 600, 400);
+    vw->show();
+
+    player->play();
+
+    //qDebug() << player->state();
+}
+
+void MainWindow::on_testCamera_clicked()
+{
+    if (QCameraInfo::availableCameras().count() > 0)
+        qDebug() << "There are" << QCameraInfo::availableCameras().count() << "available cameras."; // prints number of available cameras
+
+    mCamera = new QCamera(this); // declare camera oject
+    QVideoWidget *videoWidget = new QVideoWidget; // declare video widget object
+
+    const QList<QCameraInfo> cameras = QCameraInfo::availableCameras(); // declare a new list of camera names
+    for (const QCameraInfo &cameraInfo : cameras) {
+        qDebug() << (cameraInfo.deviceName()); // prints ID names of all available cameras
+    }
+
+    videoWidget->setGeometry(600, 400, 600, 400); // set size of video widget
+    videoWidget->show(); // display video widget
+
+    mCamera->setViewfinder(videoWidget); // set videowidget to display
+
+    mCamera->start(); // start camera
+}
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow)
@@ -540,3 +590,4 @@ uint32_t MainWindow::toInt32(float f_value){
     uint32_t* f_value_Int32 = reinterpret_cast<uint32_t*>(&f_value);
     return *f_value_Int32;
 }
+

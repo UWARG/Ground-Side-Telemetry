@@ -33,6 +33,11 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
+class QCamera;
+class QCameraViewfinder;
+class QCameraImageCapture;
+class QVBoxlayout;
+
 class MainWindow : public QMainWindow
 {
 
@@ -163,7 +168,6 @@ public slots:
 
 // Helper slots to handle events from the GUI
 private slots:
-
     void on_setWaypointNumberButton_clicked();
     //void on_sendInfoButton_clicked();
     //void pigoFileChanged(const QString & path);
@@ -172,6 +176,10 @@ private slots:
     //void on_pogiBrowseButton_clicked();
 
     void on_testUpdateWidget_clicked();
+
+    void on_testVideo_clicked();
+
+    void on_testCamera_clicked();
 
 private:
 
@@ -184,6 +192,9 @@ private:
 
 
     mavlink_decoding_status_t decoderStatus;
+
+    QCamera *mCamera;
+    QCameraViewfinder *mCameraViewfinder;
 
 };
 #endif // MAINWINDOW_H
