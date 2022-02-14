@@ -14,15 +14,15 @@
 #include <QDebug>
 #include <iostream>
 
+// added libraries below
+#include <iomanip>
+#include <sstream>
+#include <QMessageBox>
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    allowReading = false;
-    PIGOFilePath = "";
-    POGIFilePath = "";
-    watcher = new QFileSystemWatcher(this);
-    connect(watcher, SIGNAL(pigoFileChanged(const QString &)), this, SLOT(pigoFileChanged(const QString &)));
     serial = new Serial("COM5", QSerialPort::Baud9600, QSerialPort::OneStop, QSerialPort::NoFlowControl, QSerialPort::Data8);
 
     connect(serial, SIGNAL(newSerialDataRead(QByteArray)), this, SLOT(updateWidget(QByteArray)));
@@ -49,9 +49,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     /* init decoding fields */
     this->decoderStatus = MAVLINK_DECODING_INCOMPLETE;
-
-
-
 }
 
 MainWindow::~MainWindow()
@@ -63,6 +60,61 @@ MainWindow::~MainWindow()
 // SLOTS
 ///////////////////////////////////////////////////////////
 
+void MainWindow::on_testUpdateWidget_clicked()
+{
+    QByteArray testing_array;
+    testing_array.resize(29); // https://blog.fireheart.in/a?ID=01750-818441ff-32e9-419f-9738-f66b0570d4d2
+
+    testing_array[0] = 0x7E;
+    testing_array[1] = 0x00;
+    testing_array[2] = 0x19;
+    testing_array[3] = 0x90;
+    testing_array[4] = 0x01;
+    testing_array[5] = 0x00;
+    testing_array[6] = 0x13;
+    testing_array[7] = 0xA2;
+    testing_array[8] = 0x00;
+    testing_array[9] = 0x41;
+    testing_array[10] = 0xB1;
+    testing_array[11] = 0x6D;
+    testing_array[12] = 0x1C;
+    testing_array[13] = 0xFF;
+    testing_array[14] = 0xFE;
+    testing_array[15] = 0x00;
+    testing_array[16] = 0x00;
+    testing_array[17] = 0x53;
+    testing_array[18] = 0x45;
+    testing_array[19] = 0x4E;
+    testing_array[20] = 0x54;
+    testing_array[21] = 0x20;
+    testing_array[22] = 0x46;
+    testing_array[23] = 0x52;
+    testing_array[24] = 0x4F;
+    testing_array[25] = 0x4D;
+    testing_array[26] = 0x20;
+    testing_array[27] = 0x42;
+    testing_array[28] = 0xD1;
+
+    // Example Response Frame:
+    QByteArray testing_array2;
+    testing_array2.resize(11);
+
+    testing_array2[0] = 0x7E;
+    testing_array2[1] = 0x00;
+    testing_array2[2] = 0x07;
+    testing_array2[3] = 0x8B;
+    testing_array2[4] = 0x01;
+    testing_array2[5] = 0xFF;
+    testing_array2[6] = 0xFE;
+    testing_array2[7] = 0x00;
+    testing_array2[8] = 0x00;
+    testing_array2[9] = 0x00;
+    testing_array2[10] = 0x76;
+
+    // call function
+    updateWidget(testing_array);
+}
+
 /**
  * @brief Slot to update the GUI with data received from the plane; for CV data, it also outputs to the POGI file
  *
@@ -70,23 +122,174 @@ MainWindow::~MainWindow()
  *
  */
 void MainWindow::updateWidget(QByteArray encoded_msg)
+// ex: 7E | 00 19 | 10 | 01 | 00 13 A2 00 41 B1 6D 1C | FF FE | 00 | 00 | 53 45 4E 54 20 46 52 4F 4D 20 42 | D1
 {
-
     /* decode the data */
-
-    mavlink_decoding_status_t decoderStatus = MAVLINK_DECODING_INCOMPLETE;
-
-    char decoded_message_buffer[50]; //256 is the max payload length
 
     // decoder gets one byte at a time from a serial port
     POGI_Message_IDs_e message_type = POGI_MESSAGE_ID_NONE;
 
-    for( int i = 0; i < encoded_msg.size(); i++) // 50 is just a random number larger than message length (for GPS message length is 39)
+    // constants
+    const uint STARTING_DELIMINATOR_7E_VALUE = 126;
+    const uint FRAME_TYPE_90_VALUE = 144;
+    const uint FRAME_TYPE_8B_VALUE = 139;
+
+    // Double check correct data types in declaration
+    quint8 start_deliminator = encoded_msg[0]; // unsigned byte 7E
+    qDebug() << "Start Deliminator: ";
+    qDebug() << start_deliminator; // outputs 126
+
+    QByteArray frame_bytes = encoded_msg.mid(1, 2);
+    QDataStream ds(frame_bytes); // https://stackoverflow.com/questions/1251662/qbytearray-to-integer
+    short frame_length;
+    ds >> frame_length;
+    qDebug() << "Frame length: ";
+    qDebug() << frame_length; // outputs 25
+    // STORE BOTH BYTES INTO LENGTH OF MESSAGE!
+
+    quint8 frame_type = encoded_msg[3]; // 90 or 8B
+    qDebug() << "Frame type: ";
+    qDebug() << frame_type; // 90 -> 144, 8B -> 139 (to binary)
+
+    if (start_deliminator == STARTING_DELIMINATOR_7E_VALUE) // CHECK IF THE START DELIMINATOR IS 7E: DECLARED AS CONSTANT
     {
-        if (decoderStatus != MAVLINK_DECODING_OKAY)
+        if (frame_type == FRAME_TYPE_90_VALUE) // CHECK IF FRAME TYPE IS 90 (split 2 different if cases)
         {
-            printf("copying byte: %d  |  current byte : %hhx\n", i, encoded_msg.at(i));
-            decoderStatus = Mavlink_groundside_decoder(&message_type, encoded_msg.at(i), (uint8_t*) &decoded_message_buffer);
+            uint length_of_message = frame_length - 14; // STORE THE ACTUAL LENGTH OF MESSAGE INTO VARIABLE
+            qDebug() << "Length of message: ";
+            qDebug() << length_of_message;
+
+            quint8 frame_ID = encoded_msg[4];
+            qDebug() << "Frame ID: ";
+            qDebug() << frame_ID; // outputs 1
+
+            QByteArray sixtyfour_bit; // need to store 8 bytes
+            sixtyfour_bit.resize(8);
+
+            QString str_sixtyfour_bit;
+            QString str;
+
+            const uint SIXTYFOUR_BIT_START_POSITION = 5;
+            int total = 0;
+
+            for (int i = 0; i < sixtyfour_bit.size(); i++) // use slicing function c++?
+            {
+                sixtyfour_bit[i] = encoded_msg[i + SIXTYFOUR_BIT_START_POSITION]; // fill with {00 13 A2 00 41 B1 6D 1C}
+                // qDebug() << sixtyfour_bit[i]; so this outputs weird characters since they are bytes
+                // to output properly in binary, you will need to declare a new quint8, give the value
+                // to the unsigned int, then qDebug() the quint8 to output to the Application Output
+
+                // convert to string here
+                str = sixtyfour_bit[i];
+                str_sixtyfour_bit += str;
+                //qDebug() << str;
+
+                quint8 temp = sixtyfour_bit[i];
+                total += temp; // accumulate an int representing the 64 bit address
+            }
+
+            qDebug() << "64 bit address: ";
+            qDebug() << sixtyfour_bit; // prints "\x00\x13\xA2\x00""A\xB1m\x1C"
+
+            QString cv_address = QStringLiteral("\u0000\u0013¢\u0000A±m\u001C");
+
+            if (total == -1) // CHECK SIXTYFOUR_BIT IF IT IS FW ADDRESS
+            {
+                qDebug () << "You ran the FW case.";
+                // pass;
+                // call FW function
+            }
+            else if (str_sixtyfour_bit == cv_address) // CHECK SIXTYFOUR_BIT IF IT IS CV ADDRESS (560 is the value for the example)
+            {
+                quint16 sixteen_bit = 0xFFFE; // will be FF FE default
+
+                quint8 broadcast_radius = 0x00;
+
+                quint8 options = 0x00;
+
+                QByteArray message;
+                message.resize(length_of_message);
+
+                QString str_message;
+
+                const uint MESSAGE_START_POSITION = 17;
+
+                for (int i = 0; i < message.size(); i++)
+                {
+                    message[i] = encoded_msg[i + MESSAGE_START_POSITION]; // 53 45 4E 54 20 46 52 4F 4D 20 42 message is "SENT FROM B"
+                }
+
+                str_message = message;
+
+                qDebug() << "Message: ";
+                qDebug() << str_message; // prints "SENT FROM B"
+
+                const uint DATE_LENGTH = 6;
+                const uint TIME_LENGTH = 4;
+                const uint INFO_LENGTH = length_of_message - (DATE_LENGTH + TIME_LENGTH);
+
+                QString info = str_message.left(INFO_LENGTH);
+                qDebug() << info; // prints "S"
+
+                QString date = str_message.mid(INFO_LENGTH, DATE_LENGTH);
+                qDebug() << date; // prints "ENT FR"
+
+                QString time = str_message.right(TIME_LENGTH);
+                qDebug() << time; // prints "OM B"
+
+                quint8 check_sum = encoded_msg[3 + frame_length];
+                qDebug() << "Checksum: ";
+                qDebug() << check_sum; // outputs 209
+
+                // Window output
+                ui->InfoText->setText(info);
+                ui->DateText->setText(date);
+                ui->TimeText->setText(time);
+            }
+        }
+        if (frame_type == FRAME_TYPE_8B_VALUE) // CHECK IF FRAME TYPE IS 8B
+        {
+            // 8B is response frame (transmit response)
+            // indicates success or failure
+            qDebug() << "-------------";
+            qDebug() << "Second array";
+
+            uint length_of_message = frame_length;
+            qDebug() << "Length of message: ";
+            qDebug() << length_of_message;
+
+            quint8 frame_ID = encoded_msg[4];
+            qDebug() << "Frame ID: ";
+            qDebug() << frame_ID; // outputs 1
+
+            quint16 sixteen_bit = 0xFFFE;
+
+            uint retry_count = encoded_msg[7];
+            qDebug() << "Retry count:";
+            qDebug() << retry_count; // outputs 0
+
+            uint delivery_status = encoded_msg[8]; // 00 for success, anything else is failure
+            qDebug() << "Delivery status:";
+            qDebug() << delivery_status; // outputs 0
+
+            uint discovery_status = encoded_msg[9]; // 00 for success, 25 means root not found
+                                                    // Question: Difference betweem delivery status and discovery status?
+            qDebug() << "Discovery status:";
+            qDebug() << discovery_status; // outputs 0
+
+            bool receive_successful;
+            if (delivery_status == 0 && discovery_status == 0) // check if successful
+            {
+                receive_successful = true;
+            }
+            else
+            {
+                receive_successful = false;
+            }
+
+            quint8 check_sum = encoded_msg[10];
+            qDebug() << "Checksum: ";
+            qDebug() << check_sum; // outputs 118
         }
     }
 
@@ -100,7 +303,6 @@ void MainWindow::updateWidget(QByteArray encoded_msg)
             memcpy(&timestamp_decoded, &decoded_message_buffer, sizeof(POGI_Timestamp_t));
             ui->data_timestampOfMeasurements->setNum((int) timestamp_decoded.timeStamp);
 
-            write_to_POGI_JSON(QString("timestampOfMeasurements"), QJsonValue((int) timestamp_decoded.timeStamp), this->POGIFilePath);
         }
         break;
 
@@ -118,7 +320,6 @@ void MainWindow::updateWidget(QByteArray encoded_msg)
                 {"altitude", (int) gps_decoded.altitude},
                 {"longitude", (int) gps_decoded.longitude}
             };
-            write_to_POGI_JSON(QString("gpsCoordinates"), QJsonValue(gps_coords), this->POGIFilePath);
         }
         break;
 
@@ -136,7 +337,6 @@ void MainWindow::updateWidget(QByteArray encoded_msg)
                 {"roll", (double) plane_euler_decoded.roll},
                 {"yaw", (double) plane_euler_decoded.yaw}
             };
-            write_to_POGI_JSON(QString("eulerAnglesOfPlane"), QJsonValue(plane_euler), this->POGIFilePath);
         }
         break;
 
@@ -154,7 +354,6 @@ void MainWindow::updateWidget(QByteArray encoded_msg)
                 {"roll", (double) camera_euler_decoded.roll},
                 {"yaw", (double) camera_euler_decoded.yaw}
             };
-            write_to_POGI_JSON(QString("eulerAnglesOfCamera"), QJsonValue(camera_euler), this->POGIFilePath);
         }
         break;
 
@@ -171,7 +370,6 @@ void MainWindow::updateWidget(QByteArray encoded_msg)
                 ui->data_isLanded->setText("False");
             }
 
-            write_to_POGI_JSON(QString("isLanded"), QJsonValue((bool) is_landed_decoded.cmd), this->POGIFilePath);
         }
         break;
 
@@ -181,7 +379,6 @@ void MainWindow::updateWidget(QByteArray encoded_msg)
             memcpy(&airspeed_decoded, &decoded_message_buffer, sizeof(four_bytes_float_cmd_t));
             ui->data_currentAirspeed->setNum((double) airspeed_decoded.cmd);
 
-            write_to_POGI_JSON(QString("currentAirspeed"), QJsonValue((double) airspeed_decoded.cmd), this->POGIFilePath);
         }
         break;
 
@@ -268,173 +465,12 @@ void MainWindow::on_setWaypointNumberButton_clicked()
     }
 }
 
-void MainWindow::on_sendInfoButton_clicked()
-{
-    QString waypointModifyFlightPathCommand = enumSelection(ui->waypointModifyFlightPathCommandBox);
-    ui->waypointModifyFlightPathCommandBox->itemData(0);
-
-    convertMessage(waypointModifyFlightPathCommand, MESSAGE_ID_WAYPOINT_MODIFY_PATH_CMD);
-
-    QString waypointNextDirectionCommand = ui->waypointNextDirectionsCommandBox->currentText();
-    convertMessage(waypointNextDirectionCommand, MESSAGE_ID_WAYPOINT_NEXT_DIRECTIONS_CMD);
-
-    QString initalizingHomeBase = enumSelection(ui->initializingHomeBaseBox);
-    convertMessage(initalizingHomeBase, MESSAGE_ID_INITIALIZING_HOMEBASE);
-
-    QString holdingAltitude = ui->holdingAltitudeEdit->text();
-    convertMessage(holdingAltitude, MESSAGE_ID_HOLDING_ALTITUDE);
-
-    QString holdingTurnRadius = ui->holdingTurnRadiusEdit->text();
-    convertMessage(holdingTurnRadius, MESSAGE_ID_HOLDING_TURN_RADIUS);
-
-    QString holdingTurnDirection = enumSelection(ui->holdingTurnDirectionBox);
-    convertMessage(holdingTurnDirection, MESSAGE_ID_HOLDING_TURN_DIRECTION);
-
-    QString flightPathModifyNextId = ui->flightPathModifyNextIdEdit->text();
-    convertMessage(flightPathModifyNextId, MESSAGE_ID_PATH_MODIFY_NEXT_LD);
-
-    QString flightPathModifyPrevId = ui->flightPathModifyPrevIdEdit->text();
-    convertMessage(flightPathModifyPrevId, MESSAGE_ID_PATH_MODIFY_PREV_LD);
-
-    QString flightPathModifyId = ui->flightPathModifyIdEdit->text();
-    convertMessage(flightPathModifyId, MESSAGE_ID_PATH_MODIFY_LD);
-
-    QString homeBaseLatitude = ui->homeBaseLatitudeEdit->text();
-    QString homeBaseLongitude = ui->homeBaseLongitudeEdit->text();
-    QString homeBaseAltitude = ui->homeBaseAltitudeEdit->text();
-    QString homeBaseTurnRadius = ui->homeBaseTurnRadiusdit->text();
-    QString homeBaseWaypointType = enumSelection(ui->homeBaseWaypointTypeBox);
-
-    QList<QString> homeBaseInfo = {homeBaseLatitude,
-                                   homeBaseLongitude,
-                                   homeBaseAltitude,
-                                   homeBaseTurnRadius,
-                                   homeBaseWaypointType};
-    convertMessage(homeBaseInfo, MESSAGE_ID_HOMEBASE);
-
-
-    int numWaypoints = ui->setWaypointNumberEdit->value();
-    convertMessage(numWaypoints == 0 ? "" : QString::number(numWaypoints),
-                   MESSAGE_ID_NUM_WAYPOINTS);
-
-    if (!(ui->waypointScrollAreaWidgetContents->layout() == nullptr || numWaypoints == 0))
-    {
-        QFormLayout *layout = qobject_cast<QFormLayout *>(ui->waypointScrollAreaWidgetContents->layout());
-
-        for (int i{}; i < numWaypoints; i++)
-        {
-            QString waypointLatitude = qobject_cast<QLineEdit *>(layout->itemAt(i * 14 + 4)->widget())->text();
-            QString waypointLongitude = qobject_cast<QLineEdit *>(layout->itemAt(i * 14 + 6)->widget())->text();
-            QString waypointAltitude = qobject_cast<QLineEdit *>(layout->itemAt(i * 14 + 8)->widget())->text();
-            QString waypointTurnRadius = qobject_cast<QLineEdit *>(layout->itemAt(i * 14 + 10)->widget())->text();
-            QString waypointType = enumSelection(qobject_cast<QComboBox *>(layout->itemAt(i * 14 + 12)->widget()));
-
-            QList<QString> waypointInfo = {waypointLatitude,
-                                           waypointLongitude,
-                                           waypointAltitude,
-                                           waypointTurnRadius,
-                                           waypointType};
-
-            convertMessage(waypointInfo, MESSAGE_ID_WAYPOINTS);
-        }
-    }
-}
-
-
-void MainWindow::pigoFileChanged(const QString & path)
-{
-   if (allowReading){
-       if (QFile::exists(path)) {
-            watcher->addPath(path);
-        }
-
-      QFile file(path);
-      file.open(QFile::ReadOnly | QFile::Text);
-      QTextStream in(&file);
-      QString text = in.readAll();
-
-
-      std::string current_locale_text = text.toUtf8().constData();
-      json j = json::parse(current_locale_text);
-
-      QString beginTakeoff = QString::number((int)j["beginTakeoff"]);
-      convertMessage(beginTakeoff, MESSAGE_ID_BEGIN_TAKEOFF);
-
-      QString beginLanding = QString::number((int)j["beginLanding"]);
-      convertMessage(beginLanding, MESSAGE_ID_BEGIN_LANDING);
-
-      QString groundHeading = QString::number((float)j["groundCommands"]["heading"]);
-      QString groundLatestDistance = QString::number((float)j["groundCommands"]["latestDistance"]);
-
-      QList<QString> groundInfo = {groundHeading,
-                                   groundLatestDistance
-                                  };
-
-      convertMessage(groundInfo, MESSAGE_ID_GROUND_CMD);
-
-
-      QString gimbalPitch = QString::number((float)j["gimbalCommands"]["pitch"]);
-      QString gimbalYaw = QString::number((float)j["gimbalCommands"]["yaw"]);
-
-      QList<QString> gimbalInfo = {gimbalPitch,
-                                   gimbalYaw
-                                  };
-
-      convertMessage(gimbalInfo, MESSAGE_ID_GIMBAL_CMD);
-
-
-      QString gpsLat = QString::number((int)j["CVGpsCoordinatesOfLandingSpot"]["latitude"]);
-      QString gpsLon = QString::number((int)j["CVGpsCoordinatesOfLandingSpot"]["longitude"]);
-      QString gpsAlt = QString::number((int)j["CVGpsCoordinatesOfLandingSpot"]["altitude"]);
-      QString gpsDOL = QString::number((float)j["CVGpsCoordinatesOfLandingSpot"]["direction of landing"]);
-
-      QList<QString> gpsInfo = {gpsLat,
-                                gpsLon,
-                                gpsAlt,
-                                gpsDOL
-                               };
-      convertMessage(gpsInfo, MESSAGE_ID_GPS_LANDING_SPOT);
-   }
-}
-
-void MainWindow::on_readingButton_clicked()
-{
-    if (allowReading){
-        ui->readingButton->setText("Start Reading");
-        allowReading = !allowReading;
-    }
-    else if (PIGOFilePath != ""){
-        ui->readingButton->setText("Stop Reading");
-        watcher->addPath(PIGOFilePath);
-        allowReading = !allowReading;
-    }
-
-}
-
-void MainWindow::on_pigoBrowseButton_clicked()
-{
-    PIGOFilePath = QFileDialog::getOpenFileName(this, "Open the CV PIGO File", QDir::homePath(), "JSON File (*.json)");
-    watcher->addPath(PIGOFilePath);
-    QFile file(PIGOFilePath);
-    QFileInfo fileInfo(file.fileName());
-    QString filename(fileInfo.fileName());
-    ui->pigoFileNameEdit->setText(filename);
-}
-
-void MainWindow::on_pogiBrowseButton_clicked()
-{
-    POGIFilePath = QFileDialog::getOpenFileName(this, "Open the CV POGI File", QDir::homePath(), "JSON File (*.json)");
-    ui->pogiFileNameEdit->setText(POGIFilePath);
-}
-
-
 ///////////////////////////////////////////////////////////
 // MAIN FUNCITONS
 ///////////////////////////////////////////////////////////
 
 void MainWindow::addWaypoint(int num, QFormLayout *layout, int maxNum)
 {
-
     layout->addRow(new QLabel("Waypoint"), new QLabel(QString::number(num)));
     layout->addItem(new QSpacerItem(0, 3, QSizePolicy::Fixed));
 
@@ -461,103 +497,6 @@ void MainWindow::addWaypoint(int num, QFormLayout *layout, int maxNum)
  * @param msg_id Identifier for what type of data is to be sent
  *
  */
-
-void MainWindow::convertMessage(QString data, PIGO_Message_IDs_e msg_id){
-    if (data == ""){
-        return;
-    }
-
-    mavlink_message_t encoded_msg;
-    memset(&encoded_msg, 0x00, sizeof(mavlink_message_t));
-
-    int data_int = data.toInt();
-
-    switch(msg_id){
-        case MESSAGE_ID_NUM_WAYPOINTS:
-        case MESSAGE_ID_HOLDING_ALTITUDE:
-        case MESSAGE_ID_HOLDING_TURN_RADIUS:
-        case MESSAGE_ID_PATH_MODIFY_NEXT_LD:
-        case MESSAGE_ID_PATH_MODIFY_PREV_LD:
-        case MESSAGE_ID_PATH_MODIFY_LD:
-        {
-            four_bytes_int_cmd_t command = {data_int,};
-            uint8_t encoderStatus = Mavlink_groundside_encoder(msg_id, &encoded_msg, (const uint8_t*) &command);
-            break;
-        }
-        case MESSAGE_ID_WAYPOINT_MODIFY_PATH_CMD:
-        case MESSAGE_ID_WAYPOINT_NEXT_DIRECTIONS_CMD:
-        case MESSAGE_ID_HOLDING_TURN_DIRECTION:
-        {
-            one_byte_uint_cmd_t command = {(uint8_t)data_int,};
-            uint8_t encoderStatus = Mavlink_groundside_encoder(msg_id, &encoded_msg, (const uint8_t*) &command);
-            break;
-        }
-        case MESSAGE_ID_BEGIN_LANDING:
-        case MESSAGE_ID_BEGIN_TAKEOFF:
-        case MESSAGE_ID_INITIALIZING_HOMEBASE:
-        {
-            single_bool_cmd_t command = {(bool)data_int,};
-            uint8_t encoderStatus = Mavlink_groundside_encoder(msg_id, &encoded_msg, (const uint8_t*) &command);
-            break;
-        }
-        default: break;
-    }
-
-    serial->write(mavlinkToByteArray(encoded_msg));
-}
-
-void MainWindow::convertMessage(QList<QString> data, PIGO_Message_IDs_e msg_id){
-    for (int i{}; i < data.length(); i++){
-        if (data[i] == ""){
-            return;
-        }
-    }
-
-    mavlink_message_t encoded_msg;
-    memset(&encoded_msg, 0x00, sizeof(mavlink_message_t));
-
-    uint8_t encoderStatus{};
-
-    if (msg_id == MESSAGE_ID_HOMEBASE || msg_id == MESSAGE_ID_WAYPOINTS){
-        PIGO_WAYPOINTS_t data_transferred{};
-        data_transferred.latitude = data[0].toInt();
-        data_transferred.longitude = data[1].toInt();
-        data_transferred.altitude = data[2].toInt();
-        data_transferred.turnRadius = toInt32(data[3].toFloat());
-        data_transferred.waypointType = data[4].toInt();
-
-        encoderStatus = Mavlink_groundside_encoder(msg_id, &encoded_msg, (const uint8_t*) &data_transferred);
-    }
-    else if (msg_id == MESSAGE_ID_GPS_LANDING_SPOT){
-        PIGO_GPS_LANDING_SPOT_t data_transferred{};
-        data_transferred.latitude = data[0].toInt();
-        data_transferred.longitude = data[1].toInt();
-        data_transferred.altitude = data[2].toInt();
-        data_transferred.landingDirection = data[3].toInt();
-
-       encoderStatus = Mavlink_groundside_encoder(msg_id, &encoded_msg, (const uint8_t*) &data_transferred);
-    }
-    else if (msg_id == MESSAGE_ID_GROUND_CMD || msg_id == MESSAGE_ID_GIMBAL_CMD){
-        PIGO_GIMBAL_t data_transferred{};
-
-        data_transferred.pitch = toInt32(data[0].toFloat());
-        data_transferred.yaw = toInt32(data[1].toFloat());
-
-        encoderStatus = Mavlink_groundside_encoder(msg_id, &encoded_msg, (const uint8_t*) &data_transferred);
-    }
-    else if (msg_id == MESSAGE_ID_GPS_LANDING_SPOT){
-        PIGO_GPS_LANDING_SPOT_t data_transferred{};
-        data_transferred.latitude = data[0].toInt();
-        data_transferred.longitude = data[1].toInt();
-        data_transferred.altitude = data[2].toInt();
-        data_transferred.landingDirection = toInt32(data[3].toFloat());
-
-        encoderStatus = Mavlink_groundside_encoder(msg_id, &encoded_msg, (const uint8_t*) &data_transferred);
-    }
-    serial->write(mavlinkToByteArray(encoded_msg));
-
-    return;
-}
 
 ///////////////////////////////////////////////////////////
 // HELPER FUNCTIONS
@@ -601,3 +540,4 @@ uint32_t MainWindow::toInt32(float f_value){
     uint32_t* f_value_Int32 = reinterpret_cast<uint32_t*>(&f_value);
     return *f_value_Int32;
 }
+
