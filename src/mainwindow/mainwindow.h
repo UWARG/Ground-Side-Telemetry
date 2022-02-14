@@ -177,10 +177,6 @@ private slots:
 
     void on_testUpdateWidget_clicked();
 
-    void on_testVideo_clicked();
-
-    void on_testCamera_clicked();
-
 private:
 
     // GUI object
