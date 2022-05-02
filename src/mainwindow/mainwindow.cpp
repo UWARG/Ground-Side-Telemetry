@@ -193,15 +193,7 @@ void MainWindow::updateWidget(QByteArray encoded_msg)
 
             QString cv_address = QStringLiteral("\u0000\u0013¢\u0000A±m\u001C");
 
-            if (total == -1) // CHECK SIXTYFOUR_BIT IF IT IS FW ADDRESS
-            {
-                qDebug () << "You ran the FW case.";
-                // pass;
-                // call FW function
-            }
-            else if (str_sixtyfour_bit == cv_address) // CHECK SIXTYFOUR_BIT IF IT IS CV ADDRESS (560 is the value for the example)
-            {
-                quint16 sixteen_bit = 0xFFFE; // will be FF FE default
+             quint16 sixteen_bit = 0xFFFE; // will be FF FE default
 
                 quint8 broadcast_radius = 0x00;
 
@@ -245,51 +237,6 @@ void MainWindow::updateWidget(QByteArray encoded_msg)
                 ui->InfoText->setText(info);
                 ui->DateText->setText(date);
                 ui->TimeText->setText(time);
-            }
-        }
-        if (frame_type == FRAME_TYPE_8B_VALUE) // CHECK IF FRAME TYPE IS 8B
-        {
-            // 8B is response frame (transmit response)
-            // indicates success or failure
-            qDebug() << "-------------";
-            qDebug() << "Second array";
-
-            uint length_of_message = frame_length;
-            qDebug() << "Length of message: ";
-            qDebug() << length_of_message;
-
-            quint8 frame_ID = encoded_msg[4];
-            qDebug() << "Frame ID: ";
-            qDebug() << frame_ID; // outputs 1
-
-            quint16 sixteen_bit = 0xFFFE;
-
-            uint retry_count = encoded_msg[7];
-            qDebug() << "Retry count:";
-            qDebug() << retry_count; // outputs 0
-
-            uint delivery_status = encoded_msg[8]; // 00 for success, anything else is failure
-            qDebug() << "Delivery status:";
-            qDebug() << delivery_status; // outputs 0
-
-            uint discovery_status = encoded_msg[9]; // 00 for success, 25 means root not found
-                                                    // Question: Difference betweem delivery status and discovery status?
-            qDebug() << "Discovery status:";
-            qDebug() << discovery_status; // outputs 0
-
-            bool receive_successful;
-            if (delivery_status == 0 && discovery_status == 0) // check if successful
-            {
-                receive_successful = true;
-            }
-            else
-            {
-                receive_successful = false;
-            }
-
-            quint8 check_sum = encoded_msg[10];
-            qDebug() << "Checksum: ";
-            qDebug() << check_sum; // outputs 118
         }
     }
 
