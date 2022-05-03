@@ -10,6 +10,7 @@
 
 #include "Groundside_Functions.hpp"
 
+<<<<<<< HEAD
 mavlink_decoding_status_t groundside_decoder(POGI_Message_IDs_e* type, uint8_t incomingByte, uint8_t *telemetryData)
 {
     int channel = MAVLINK_COMM_0; //mavlink default one channel
@@ -189,6 +190,8 @@ mavlink_decoding_status_t groundside_decoder(POGI_Message_IDs_e* type, uint8_t i
 }
 
 
+=======
+>>>>>>> main
 mavlink_encoding_status_t Mavlink_groundside_encoder(PIGO_Message_IDs_e msgID,
                                                   mavlink_message_t *message,
                                                   const uint8_t *struct_ptr)

@@ -75,11 +75,49 @@
         </property>
        </widget>
       </item>
+      <item row="2" column="1">
+       <widget class="QComboBox" name="waypointNextDirectionsCommandBox">
+        <item>
+         <property name="text">
+          <string/>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>0 - Regular Path Following</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>1 - Toggle Holding</string>
+         </property>
+        </item>
+       </widget>
+      </item>
       <item row="3" column="0">
        <widget class="QLabel" name="label_5">
         <property name="text">
          <string>Initializing Home Base </string>
         </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QComboBox" name="initializingHomeBaseBox">
+        <item>
+         <property name="text">
+          <string/>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>0 - No</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>1 - Yes</string>
+         </property>
+        </item>
        </widget>
       </item>
       <item row="4" column="0">
@@ -120,6 +158,25 @@
         <property name="text">
          <string>Holding Turn Direction</string>
         </property>
+       </widget>
+      </item>
+      <item row="7" column="1">
+       <widget class="QComboBox" name="holdingTurnDirectionBox">
+        <item>
+         <property name="text">
+          <string/>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>0 - Clockwise</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>1 - Counter Clockwise</string>
+         </property>
+        </item>
        </widget>
       </item>
       <item row="8" column="0">
@@ -235,83 +292,6 @@
         </property>
        </widget>
       </item>
-      <item row="19" column="0">
-       <spacer name="verticalSpacer_4">
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>20</width>
-          <height>40</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item row="20" column="0" colspan="2">
-       <widget class="QPushButton" name="sendInfoButton">
-        <property name="text">
-         <string>Send</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QComboBox" name="waypointNextDirectionsCommandBox">
-        <item>
-         <property name="text">
-          <string/>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>0 - Regular Path Following</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>1 - Toggle Holding</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="QComboBox" name="initializingHomeBaseBox">
-        <item>
-         <property name="text">
-          <string/>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>0 - No</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>1 - Yes</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-      <item row="7" column="1">
-       <widget class="QComboBox" name="holdingTurnDirectionBox">
-        <item>
-         <property name="text">
-          <string/>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>0 - Clockwise</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>1 - Counter Clockwise</string>
-         </property>
-        </item>
-       </widget>
-      </item>
       <item row="18" column="1">
        <widget class="QComboBox" name="homeBaseWaypointTypeBox">
         <item>
@@ -335,6 +315,19 @@
          </property>
         </item>
        </widget>
+      </item>
+      <item row="19" column="0">
+       <spacer name="verticalSpacer_4">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>40</height>
+         </size>
+        </property>
+       </spacer>
       </item>
      </layout>
     </item>
@@ -394,8 +387,8 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>367</width>
-           <height>559</height>
+           <width>407</width>
+           <height>584</height>
           </rect>
          </property>
         </widget>
@@ -405,7 +398,14 @@
     </item>
     <item>
      <layout class="QFormLayout" name="formLayout_2">
-      <item row="0" column="0" colspan="2">
+      <item row="0" column="0">
+       <widget class="QPushButton" name="testUpdateWidget">
+        <property name="text">
+         <string>testUpdateWidget</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0" colspan="2">
        <widget class="QLabel" name="label_18">
         <property name="text">
          <string>CV PIGO FILE:</string>
@@ -415,47 +415,109 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="0">
+      <item row="2" column="0">
        <widget class="QLineEdit" name="pigoFileNameEdit"/>
       </item>
-      <item row="1" column="1">
+      <item row="2" column="1">
        <widget class="QPushButton" name="pigoBrowseButton">
         <property name="text">
          <string>Browse</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="0" colspan="2">
+      <item row="3" column="0" colspan="2">
        <widget class="QPushButton" name="readingButton">
         <property name="text">
          <string>Set PIGO JSON File</string>
         </property>
        </widget>
       </item>
-      <item row="4" column="1">
-       <widget class="QPushButton" name="pogiBrowseButton">
-        <property name="text">
-         <string>Browse</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0">
-       <widget class="QLineEdit" name="pogiFileNameEdit"/>
-      </item>
-      <item row="5" column="0" colspan="2">
-       <widget class="QPushButton" name="pushButton_2">
-        <property name="text">
-         <string>Set POGI JSON File</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0" colspan="2">
+      <item row="4" column="0" colspan="2">
        <widget class="QLabel" name="label_19">
         <property name="text">
          <string>CV POGI FILE:</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0">
+       <widget class="QLineEdit" name="pogiFileNameEdit"/>
+      </item>
+      <item row="5" column="1">
+       <widget class="QPushButton" name="pogiBrowseButton">
+        <property name="text">
+         <string>Browse</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0" colspan="2">
+       <widget class="QPushButton" name="pushButton_2">
+        <property name="text">
+         <string>Set POGI JSON File</string>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="0">
+       <widget class="QLabel" name="Info">
+        <property name="font">
+         <font>
+          <pointsize>9</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Info: </string>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="1">
+       <widget class="QLabel" name="InfoText">
+        <property name="font">
+         <font>
+          <pointsize>9</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item row="10" column="0">
+       <widget class="QLabel" name="Date">
+        <property name="font">
+         <font>
+          <pointsize>9</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Date: </string>
+        </property>
+       </widget>
+      </item>
+      <item row="10" column="1">
+       <widget class="QLabel" name="DateText">
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item row="11" column="0">
+       <widget class="QLabel" name="Time">
+        <property name="font">
+         <font>
+          <pointsize>9</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Time: </string>
+        </property>
+       </widget>
+      </item>
+      <item row="11" column="1">
+       <widget class="QLabel" name="TimeText">
+        <property name="text">
+         <string/>
         </property>
        </widget>
       </item>

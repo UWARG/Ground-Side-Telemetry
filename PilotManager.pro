@@ -1,5 +1,8 @@
 QT       += core gui
 QT       += serialport
+QT += multimedia
+QT += widgets
+QT += multimediawidgets
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -33,6 +36,7 @@ HEADERS += \
 FORMS += \
     src/mainwindow/mainwindow.ui
 
+QMAKE_CXXFLAGS += -std=gnu++14
 
 INCLUDEPATH += \
     src/ \
