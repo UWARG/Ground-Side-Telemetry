@@ -48,7 +48,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->data_currentAirspeed->setNum(0);
 
     /* init decoding fields */
-    this->decoderStatus = MAVLINK_DECODING_INCOMPLETE;
+    this->decoderStatus = DECODING_INCOMPLETE;
 }
 
 MainWindow::~MainWindow()
